@@ -5,212 +5,502 @@
 <style>
 :root{
   --canvas:#faf9f5; --soft:#f5f0e8; --card:#efe9de; --cream:#e8e0d2;
-  --hairline:#e6dfd8; --hairline-2:#ebe6df;
+  --raise:#fffdf9;
+  --hairline:#e6dfd8; --hairline-2:#ece7e0;
   --ink:#141413; --body:#3d3d3a; --muted:#6c6a64; --dim:#8e8b82;
-  --accent:#cc785c; --accent-active:#a9583e;
+  --accent:#cc785c; --accent-soft:#cc785c14; --accent-active:#a9583e;
   --ok:#5db872; --warn:#d4a017; --err:#c64545; --teal:#5db8a6;
   --serif:"Songti SC","Noto Serif SC","Source Han Serif SC",Georgia,serif;
   --sans:"PingFang SC","Hiragino Sans GB",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace;
-  --r:12px;
+  --r:14px; --r-sm:9px;
+  --lbl:208px;
+  --sh:0 1px 2px #1414130a, 0 8px 24px -18px #14141324;
 }
 *{box-sizing:border-box}
+html{scroll-behavior:smooth}
 html,body{margin:0}
-body{background:var(--canvas); color:var(--body); font:14px/1.55 var(--sans); -webkit-font-smoothing:antialiased}
-.page{max-width:1180px; margin:0 auto; padding:34px 24px 60px}
+body{background:var(--canvas); color:var(--body); font:14px/1.6 var(--sans); -webkit-font-smoothing:antialiased}
+.page{max-width:1200px; margin:0 auto; padding:0 24px 64px}
 :focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:4px}
-@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important; transition-duration:.01ms!important}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important; transition-duration:.01ms!important; scroll-behavior:auto!important}}
 
-header.top{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin-bottom:6px}
-h1{margin:0; font-family:var(--serif); font-weight:400; font-size:26px; color:var(--ink); letter-spacing:.2px}
-.asof{font-family:var(--mono); font-size:12px; color:var(--dim)}
-.lede{margin:0 0 22px; color:var(--muted); font-size:13.5px; max-width:70ch}
+/* ---------- 页头 ---------- */
+.hero{display:flex; align-items:flex-end; justify-content:space-between; gap:24px; flex-wrap:wrap; padding:40px 0 22px}
+.eyebrow{margin:0 0 8px; font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent)}
+h1{margin:0; font-family:var(--serif); font-weight:400; font-size:34px; line-height:1.15; color:var(--ink); letter-spacing:.3px}
+.lede{margin:12px 0 0; color:var(--muted); font-size:13px; max-width:64ch}
+.lede code{font-family:var(--mono); font-size:12px; background:var(--soft); border:1px solid var(--hairline); padding:1px 6px; border-radius:5px; color:var(--body)}
+.asof{text-align:right; font-family:var(--mono); font-size:11.5px; color:var(--dim); line-height:1.9; white-space:nowrap}
+.asof b{display:block; font-family:var(--serif); font-size:20px; font-weight:400; color:var(--ink); letter-spacing:.5px}
 
-.stats{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:26px}
-.stat{background:var(--soft); border:1px solid var(--hairline); border-radius:var(--r); padding:10px 14px; min-width:104px}
-.stat b{display:block; font-family:var(--serif); font-weight:400; font-size:22px; color:var(--ink); line-height:1.2}
-.stat span{font-size:11.5px; color:var(--muted)}
-.stat.warn b{color:var(--warn)}
-.stat.miss b{color:var(--err)}
+/* ---------- 吸顶导航 ---------- */
+.tabs{position:sticky; top:0; z-index:30; display:flex; gap:2px; flex-wrap:wrap;
+  padding:10px 0; margin:0 0 24px; background:color-mix(in srgb, var(--canvas) 88%, transparent);
+  backdrop-filter:saturate(1.4) blur(10px); border-bottom:1px solid var(--hairline)}
+.tab{appearance:none; border:0; background:none; font:inherit; font-size:12.5px; color:var(--muted);
+  padding:5px 12px; border-radius:9999px; cursor:pointer; text-decoration:none; transition:background .16s, color .16s}
+.tab:hover{background:var(--soft); color:var(--ink)}
+.tab.on{background:var(--accent-soft); color:var(--accent-active)}
+.tab span{font-family:var(--mono); font-size:10.5px; color:var(--dim); margin-left:6px}
 
-.card{background:var(--canvas); border:1px solid var(--hairline); border-radius:var(--r); padding:18px 20px; margin-bottom:16px}
-.card h2{margin:0 0 14px; font-family:var(--serif); font-weight:400; font-size:16px; color:var(--ink)}
-.card h2 small{font-family:var(--sans); font-size:12px; color:var(--dim); margin-left:8px; font-weight:400}
+/* ---------- KPI ---------- */
+.stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(146px,1fr)); gap:10px; margin-bottom:28px}
+.stat{position:relative; background:var(--raise); border:1px solid var(--hairline); border-radius:var(--r);
+  padding:13px 15px 14px; box-shadow:var(--sh)}
+.stat::before{content:""; position:absolute; left:15px; right:15px; top:0; height:2px; border-radius:0 0 2px 2px; background:var(--hairline)}
+.stat.warn::before{background:var(--warn)} .stat.miss::before{background:var(--err)}
+.stat.ok::before{background:var(--ok)} .stat.acc::before{background:var(--accent)}
+.stat b{display:block; font-family:var(--serif); font-weight:400; font-size:27px; line-height:1.15; color:var(--ink);
+  font-variant-numeric:tabular-nums}
+.stat span{display:block; margin-top:3px; font-size:11.5px; color:var(--muted)}
+.stat.warn b{color:#a97c0d} .stat.miss b{color:var(--err)} .stat.ok b{color:#3f8a52} .stat.acc b{color:var(--accent-active)}
 
-/* 甘特主体。窄屏靠横向滚动，别把日期轴压变形 */
-.scroll{overflow-x:auto; margin:0 -20px; padding:0 20px}
-.chart{min-width:660px}
-.axis{display:grid; grid-template-columns:186px 1fr; align-items:end; margin-bottom:6px}
-.ticks{position:relative; height:20px; border-bottom:1px solid var(--hairline)}
+/* ---------- 卡片 ---------- */
+.card{background:var(--raise); border:1px solid var(--hairline); border-radius:var(--r); padding:20px 22px;
+  margin-bottom:16px; box-shadow:var(--sh); scroll-margin-top:66px}
+.card > h2{margin:0 0 4px; font-family:var(--serif); font-weight:400; font-size:18px; color:var(--ink); display:flex; align-items:baseline; gap:10px; flex-wrap:wrap}
+.card > h2 small{font-family:var(--mono); font-size:11.5px; color:var(--dim); font-weight:400}
+.card-sub{margin:0 0 16px; font-size:12px; color:var(--muted)}
+
+.empty{padding:22px 2px 6px; color:var(--dim); font-size:13px; max-width:66ch}
+.empty b{display:block; font-family:var(--serif); font-size:19px; color:var(--ink); font-weight:400; margin-bottom:8px}
+.empty code{font-family:var(--mono); font-size:12px; background:var(--soft); padding:1px 6px; border-radius:5px; color:var(--body)}
+
+/* ---------- 时间线 ---------- */
+.legend{display:flex; gap:16px; flex-wrap:wrap; margin:0 0 14px; font-size:11.5px; color:var(--muted)}
+.legend i{display:inline-block; width:16px; height:8px; border-radius:4px; margin-right:5px; vertical-align:middle}
+.legend i.b{background:var(--teal)} .legend i.o{background:var(--err)}
+.legend i.m{width:9px; height:9px; border-radius:50%; background:var(--raise); border:2px solid var(--accent)}
+.legend i.d{background:var(--card); border:1px solid var(--hairline)}
+
+.scroll{overflow-x:auto; margin:0 -22px; padding:0 22px}
+.chart{min-width:680px}
+.axis{display:grid; grid-template-columns:var(--lbl) 1fr; align-items:end; margin-bottom:8px}
+.ticks{position:relative; height:18px; border-bottom:1px solid var(--hairline)}
 .tick{position:absolute; top:0; font-family:var(--mono); font-size:10.5px; color:var(--dim); transform:translateX(-50%); white-space:nowrap}
 .tick:first-child{transform:none}
+.tick:last-child{transform:translateX(-100%)}
+
 .rows{position:relative}
-.grid{position:absolute; inset:0; pointer-events:none}
+.bands{position:absolute; left:var(--lbl); right:0; top:0; bottom:0; pointer-events:none; overflow:hidden}
+.band{position:absolute; top:0; bottom:0; background:#14141305}
 .gline{position:absolute; top:0; bottom:0; width:1px; background:var(--hairline-2)}
-.today{position:absolute; top:0; bottom:0; width:2px; background:var(--accent); opacity:.55}
-.todaylab{position:absolute; top:-16px; font-family:var(--mono); font-size:10px; color:var(--accent-active); transform:translateX(-50%); white-space:nowrap}
+.today{position:absolute; top:-6px; bottom:0; width:2px; background:var(--accent); opacity:.5}
+.todaylab{position:absolute; top:-18px; font-family:var(--mono); font-size:10px; color:var(--accent-active);
+  background:var(--canvas); padding:0 4px; transform:translateX(-50%); white-space:nowrap; z-index:2}
 .todaylab.lft{transform:translateX(-100%)}
 
-.row{display:grid; grid-template-columns:186px 1fr; align-items:center; min-height:34px; position:relative}
-.row + .row{border-top:1px solid var(--hairline-2)}
-.name{font-size:12.5px; color:var(--ink); padding-right:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-.name em{font-style:normal; font-family:var(--mono); font-size:10.5px; color:var(--dim); margin-left:6px}
-.track{position:relative; height:34px}
+.grp{display:grid; grid-template-columns:var(--lbl) 1fr; align-items:center; padding:12px 0 4px;
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--dim)}
+.grp span{border-bottom:1px solid var(--hairline); padding-bottom:4px}
 
-.bar{position:absolute; top:9px; height:16px; border-radius:8px; background:var(--teal); min-width:3px}
-.bar.over{background:var(--err)}
-.bar.done{background:var(--card); border:1px solid var(--hairline)}
-.bar.mile{top:11px; height:12px; width:12px!important; border-radius:50%; background:var(--canvas); border:2px solid var(--accent); transform:translateX(-6px)}
-.bar .lbl{position:absolute; left:calc(100% + 8px); top:-1px; font-family:var(--mono); font-size:10.5px; color:var(--muted); white-space:nowrap}
-/* 贴着右边界的条，标签放右边会被容器裁掉，翻到左边 */
-.bar .lbl.lft{left:auto; right:calc(100% + 8px)}
-.bar .inl{position:absolute; left:9px; top:0; line-height:16px; font-size:10.5px; color:#fff; white-space:nowrap}
-.bar.done .inl{color:var(--muted)}
+.row{display:grid; grid-template-columns:var(--lbl) 1fr; align-items:center; min-height:38px; position:relative;
+  border-top:1px solid var(--hairline-2); transition:background .14s}
+.row:hover{background:var(--soft)}
+.name{font-size:12.5px; color:var(--ink); padding-right:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  display:flex; align-items:center; gap:6px}
+.name i{font-style:normal; flex:0 0 auto; font-family:var(--mono); font-size:10px; color:var(--muted);
+  background:var(--soft); border:1px solid var(--hairline); border-radius:9999px; padding:0 6px}
+.track{position:relative; height:38px}
 
-.empty{padding:26px 4px; color:var(--dim); font-size:13px}
-.empty b{display:block; font-family:var(--serif); font-size:19px; color:var(--ink); font-weight:400; margin-bottom:8px}
-.empty code{font-family:var(--mono); font-size:12px; background:var(--soft); padding:1px 6px; border-radius:4px; color:var(--body)}
+.bar{position:absolute; top:11px; height:16px; border-radius:8px; background:var(--teal); min-width:3px;
+  box-shadow:0 1px 3px #5db8a633}
+.bar.over{background:var(--err); box-shadow:0 1px 3px #c6454533}
+.bar.done{background:var(--card); border:1px solid var(--hairline); box-shadow:none}
+.bar.mile{top:14px; height:10px; width:10px!important; border-radius:50%; background:var(--raise);
+  border:2.5px solid var(--accent); transform:translateX(-5px); box-shadow:0 0 0 3px var(--accent-soft)}
+.bar.mile.over{border-color:var(--err); box-shadow:0 0 0 3px #c645451f}
+.bar .lbl{position:absolute; left:calc(100% + 9px); top:-2px; font-family:var(--mono); font-size:10.5px; color:var(--muted); white-space:nowrap}
+.bar .lbl.lft{left:auto; right:calc(100% + 9px)}
+.bar .lbl.over{color:var(--err)} .bar .lbl.soon{color:#a97c0d}
+.bar .lbl.now{color:var(--accent-active)} .bar .lbl.done{color:var(--dim)}
+.bar .inl{position:absolute; left:10px; top:0; line-height:16px; font-size:10.5px; color:#fff; white-space:nowrap}
 
+/* ---------- 表格 ---------- */
 table{width:100%; border-collapse:collapse; font-size:12.5px}
-th,td{border-bottom:1px solid var(--hairline-2); padding:8px 10px; text-align:left; vertical-align:top}
-th{font-weight:500; color:var(--muted); font-size:11.5px}
-td.mono{font-family:var(--mono); font-size:11.5px; color:var(--body); white-space:nowrap}
+th,td{border-bottom:1px solid var(--hairline-2); padding:9px 10px; text-align:left; vertical-align:top}
+th{font-weight:500; color:var(--muted); font-size:11px; letter-spacing:.04em; text-transform:uppercase;
+  position:sticky; top:52px; background:var(--raise); z-index:5}
+tbody tr:hover{background:var(--soft)}
+tbody tr:last-child td{border-bottom:0}
+td.mono{font-family:var(--mono); font-size:11.5px; color:var(--body); white-space:nowrap; font-variant-numeric:tabular-nums}
 td .sub{display:block; color:var(--dim); font-size:11.5px; margin-top:3px}
-.pill{display:inline-block; padding:1px 8px; border-radius:9999px; font-size:10.5px; font-family:var(--mono); background:var(--card); color:var(--muted); border:1px solid var(--hairline)}
-.pill.ok{background:#5db8721f; color:#3f8a52; border-color:#5db87240}
-.pill.over{background:#c645451f; color:var(--err); border-color:#c6454540}
+.pill{display:inline-block; padding:1px 8px; border-radius:9999px; font-size:10.5px; font-family:var(--mono);
+  background:var(--soft); color:var(--muted); border:1px solid var(--hairline); white-space:nowrap}
+.pill.ok{background:#5db87214; color:#3f8a52; border-color:#5db87238}
+.pill.over{background:#c6454514; color:var(--err); border-color:#c6454538}
+.todo{display:block; color:var(--body); font-size:12px; padding:2px 0}
+.todo + .todo{border-top:1px dashed var(--hairline)}
 
-footer{margin-top:28px; color:var(--dim); font-size:11.5px; font-family:var(--mono)}
-@media (max-width:720px){
-  .page{padding:24px 16px 44px}
-  h1{font-size:22px}
-  .axis,.row{grid-template-columns:120px 1fr}
-  .chart{min-width:560px}
+/* ---------- 新增文件 ---------- */
+.toolbar{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:0 0 18px}
+.seg{display:inline-flex; background:var(--soft); border:1px solid var(--hairline); border-radius:9999px; padding:2px}
+.seg button{appearance:none; border:0; background:none; font:inherit; font-size:12px; color:var(--muted);
+  padding:4px 11px; border-radius:9999px; cursor:pointer; font-variant-numeric:tabular-nums; transition:background .16s, color .16s}
+.seg button:hover{color:var(--ink)}
+.seg button.on{background:var(--raise); color:var(--ink); box-shadow:0 1px 2px #14141314}
+.seg button em{font-style:normal; font-family:var(--mono); font-size:10px; color:var(--dim); margin-left:4px}
+.seg button.on em{color:var(--accent)}
+.filt{flex:1 1 190px; min-width:150px; appearance:none; font:inherit; font-size:12.5px; color:var(--ink);
+  background:var(--raise); border:1px solid var(--hairline); border-radius:var(--r-sm); padding:7px 11px}
+.filt::placeholder{color:var(--dim)}
+.count{font-family:var(--mono); font-size:11.5px; color:var(--dim); white-space:nowrap}
+
+.proj{border:1px solid var(--hairline); border-radius:var(--r); margin-bottom:12px; overflow:hidden; background:var(--raise)}
+.proj > summary{cursor:pointer; list-style:none; display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  padding:11px 15px; background:var(--soft); border-bottom:1px solid var(--hairline)}
+.proj > summary::-webkit-details-marker{display:none}
+.proj > summary::before{content:"▸"; font-size:10px; color:var(--dim); transition:transform .16s}
+.proj[open] > summary::before{transform:rotate(90deg)}
+.proj h3{margin:0; font-size:13.5px; font-weight:500; color:var(--ink)}
+.proj .n{font-family:var(--mono); font-size:10.5px; color:var(--muted); background:var(--raise);
+  border:1px solid var(--hairline); border-radius:9999px; padding:0 7px}
+.proj .range{margin-left:auto; font-family:var(--mono); font-size:10.5px; color:var(--dim)}
+.proj .other{font-size:11.5px; color:var(--dim); padding:8px 15px 0}
+
+.f{display:grid; grid-template-columns:82px 1fr; gap:14px; padding:11px 15px; border-bottom:1px solid var(--hairline-2)}
+.f:last-child{border-bottom:0}
+.f:hover{background:var(--soft)}
+.f-meta{font-family:var(--mono); font-size:10.5px; color:var(--dim); line-height:1.7}
+.f-meta .pill{margin-top:4px}
+.f-title{font-size:13px; color:var(--ink); margin-bottom:3px; word-break:break-word}
+.f-path{font-family:var(--mono); font-size:10.5px; color:var(--dim); margin-bottom:5px; word-break:break-all}
+.f-sum{font-size:12.5px; color:var(--body)}
+.f-src{font-family:var(--mono); font-size:9.5px; color:var(--dim); border:1px solid var(--hairline-2);
+  border-radius:4px; padding:0 4px; margin-left:6px; white-space:nowrap}
+.f-none{font-size:12px; color:var(--dim); font-style:italic}
+.none{padding:26px 15px; text-align:center; color:var(--dim); font-size:12.5px}
+
+footer{margin-top:30px; padding-top:14px; border-top:1px solid var(--hairline);
+  color:var(--dim); font-size:11.5px; font-family:var(--mono); display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap}
+
+@media (max-width:760px){
+  .page{padding:0 16px 48px}
+  .hero{padding:28px 0 16px} h1{font-size:26px}
+  .asof{text-align:left}
+  :root{--lbl:124px}
+  .chart{min-width:600px}
+  .scroll{margin:0 -16px; padding:0 16px}
+  th{position:static}
+  .f{grid-template-columns:1fr; gap:6px}
+  .f-meta{display:flex; align-items:center; gap:8px}
+  .f-meta .pill{margin-top:0}
+}
+@media print{
+  body{background:#fff}
+  .tabs,.toolbar{display:none}
+  .card{box-shadow:none; break-inside:avoid; border-color:#ddd}
+  .proj{break-inside:avoid}
+  .proj > summary{background:#f7f7f7}
+  .row:hover,.tbody tr:hover,.f:hover{background:none}
+  a{text-decoration:none; color:inherit}
 }
 </style>
 </head><body>
 <div class="page">
-  <header class="top">
-    <h1>项目进展甘特图</h1>
-    <span class="asof" id="asof"></span>
+  <header class="hero">
+    <div>
+      <p class="eyebrow">客户项目管理</p>
+      <h1>项目进展甘特图</h1>
+      <p class="lede">数据来自 <code>20_客户项目/</code> 的客户索引、「提醒事项」里未完成的待办、口述补录的条目，以及项目目录下新增的文件。条要画出来必须有起止两端，只有一端的画成圆点，已完成的条目不出图。</p>
+    </div>
+    <div class="asof"><span>数据截至</span><b id="asof"></b><span id="gen"></span></div>
   </header>
-  <p class="lede">数据来自 <code style="font-family:var(--mono);font-size:12px">20_客户项目/</code> 的客户索引、「提醒事项」里未完成的待办，以及口述补录的条目。条要画出来必须有起止两端，只有一端的画成圆点，标记为已完成的条目不出图。</p>
+
+  <nav class="tabs" id="tabs"></nav>
   <div class="stats" id="stats"></div>
-  <div id="body"></div>
+  <main id="body"></main>
   <footer id="foot"></footer>
 </div>
 <script>
-const DATA = {"today":"2026-09-21","stat":{"total":17,"scheduled":0,"milestone":11,"unscheduled":6,"reminders":12,"unmatched":9,"finished":9},"rows":[{"dir":"DumateApi接入","title":"DumateApi接入","path":"20_客户项目/DumateApi接入","start":null,"due":null,"note":"","status":"active","items":[],"kind":"unscheduled"},{"dir":"启明","title":"启明","path":"20_客户项目/启明","start":null,"due":null,"note":"Web Coding 子目录：蓝牙映射技术框架梳理 + 与 skill 开放生态/agentAPI 的结合点","status":"active","items":[],"kind":"unscheduled"},{"dir":"小贝Ball世界杯","title":"小贝Ball世界杯","path":"20_客户项目/小贝Ball世界杯","start":null,"due":null,"note":"阶段一完成：接入指南已提供给客户；后续推进待评估","status":"active","items":[],"kind":"unscheduled"},{"dir":"屈臣氏云手机","title":"屈臣氏云手机","path":"20_客户项目/屈臣氏云手机","start":null,"due":"2026-09-23","note":"做一个整理，下周三之前完成","status":"active","items":[{"name":"屈臣氏云手机项目管理","done":false,"due":null,"created":"2026-09-18"}],"kind":"milestone"},{"dir":"灵医-大昕生态","title":"灵医-大昕生态","path":"20_客户项目/灵医-大昕生态","start":null,"due":null,"note":"下一步：协调 PTSA 测试资源，交给大昕健康做测试","status":"active","items":[{"name":"大昕健康-灵医大模型调用","done":false,"due":null,"created":"2026-09-18"}],"kind":"unscheduled"},{"dir":"箭牌AI客服","title":"箭牌AI客服","path":"20_客户项目/箭牌AI客服","start":null,"due":"2026-09-21","note":"跟秒哒结合 Agent API 开发，先出初版整理；2026-09-21 为截止卡点，今天继续代码生成","status":"active","items":[{"name":"箭牌-秒哒结合agentAPI开发初版","done":false,"due":null,"created":"2026-09-18"}],"kind":"milestone"},{"dir":"腾一科技","title":"腾一科技","path":"20_客户项目/腾一科技","start":null,"due":null,"note":"下一步：胜算与伐谋的 APS 排程，先整好胜算的数据基础，再用伐谋发起任务；2026-09-21 导出腾一科技胜算数据，在伐谋试跑并给出反馈","status":"active","items":[],"kind":"unscheduled"},{"dir":"multica配置","title":"multica配置","path":null,"start":"2026-09-18","due":null,"note":"未归类","status":null,"items":[],"kind":"milestone"},{"dir":"睿思智联fable5空返","title":"睿思智联fable5空返","path":null,"start":null,"due":null,"note":"进行中：已反馈给客户，等待客户回应","status":null,"items":[],"kind":"unscheduled"},{"dir":"Vibecoding小键盘，1. 蓝牙映射技术框架梳理 2.结合skill开放生态/agentAPI分析结合点","title":"Vibecoding小键盘，1. 蓝牙映射技术框架梳理 2.结合skill开放生态/agentAPI分析结合点","path":null,"start":null,"due":"2026-09-21","note":"Web Coding 子目录，明天作为卡点","status":null,"items":[],"project":"启明","kind":"milestone"},{"dir":"cdn参数技术细节补全","title":"cdn参数技术细节补全","path":null,"start":"2026-09-20","due":null,"note":"并入云计算框架知识整理","status":null,"items":[],"kind":"milestone"},{"dir":"百度智能云-具身智能合作","title":"百度智能云-具身智能合作","path":null,"start":"2026-09-20","due":null,"note":"整理具身智能合作方向 + 过往 Case 案例文档","status":null,"items":[],"kind":"milestone"},{"dir":"Ai搜索+ 小参数模型","title":"Ai搜索+ 小参数模型","path":null,"start":"2026-09-21","due":null,"note":"未归类","status":null,"items":[],"kind":"milestone"},{"dir":"拍学机，结合网盘打通举一反三","title":"拍学机，结合网盘打通举一反三","path":null,"start":"2026-09-21","due":null,"note":"未归类","status":null,"items":[],"kind":"milestone"},{"dir":"灵医-大昕生态 · 协调 PTSA 测试资源","title":"灵医-大昕生态 · 协调 PTSA 测试资源","path":null,"start":"2026-09-20","due":null,"note":"提供测试资源给大昕健康做对应测试","status":null,"project":"灵医-大昕生态","items":[],"kind":"milestone"},{"dir":"键盘传输协议 × DuMate 生态白皮书 × 启明 vibe Coding 结合","title":"键盘传输协议 × DuMate 生态白皮书 × 启明 vibe Coding 结合","path":null,"start":"2026-09-21","due":null,"note":"昨天已梳理一版键盘传输协议；今天结合 DuMate 生态宣传/宣讲白皮书与启明 vibe Coding 梳理做结合，产出返回启明端，评估后续推进","status":null,"project":"启明","items":[],"kind":"milestone"},{"dir":"腾一科技 · 胜算与伐谋 APS 排程","title":"腾一科技 · 胜算与伐谋 APS 排程","path":null,"start":"2026-09-21","due":null,"note":"先整好胜算的数据基础，再用伐谋发起任务；2026-09-21 导出腾一科技胜算数据，在伐谋试跑并给出反馈","status":null,"project":"腾一科技","items":[],"kind":"milestone"}]};
+const DATA = {"today":"2026-09-22","stat":{"total":17,"scheduled":0,"milestone":11,"unscheduled":6,"reminders":12,"unmatched":9,"finished":9},"rows":[{"dir":"DumateApi接入","title":"DumateApi接入","path":"20_客户项目/DumateApi接入","start":null,"due":null,"note":"","status":"active","items":[],"kind":"unscheduled"},{"dir":"启明","title":"启明","path":"20_客户项目/启明","start":null,"due":null,"note":"Web Coding 子目录：蓝牙映射技术框架梳理 + 与 skill 开放生态/agentAPI 的结合点","status":"active","items":[],"kind":"unscheduled"},{"dir":"小贝Ball世界杯","title":"小贝Ball世界杯","path":"20_客户项目/小贝Ball世界杯","start":null,"due":null,"note":"阶段一完成：接入指南已提供给客户；后续推进待评估","status":"active","items":[],"kind":"unscheduled"},{"dir":"屈臣氏云手机","title":"屈臣氏云手机","path":"20_客户项目/屈臣氏云手机","start":null,"due":"2026-09-23","note":"做一个整理，下周三之前完成","status":"active","items":[{"name":"屈臣氏云手机项目管理","done":false,"due":null,"created":"2026-09-18"}],"kind":"milestone"},{"dir":"灵医-大昕生态","title":"灵医-大昕生态","path":"20_客户项目/灵医-大昕生态","start":null,"due":null,"note":"下一步：协调 PTSA 测试资源，交给大昕健康做测试","status":"active","items":[{"name":"大昕健康-灵医大模型调用","done":false,"due":null,"created":"2026-09-18"}],"kind":"unscheduled"},{"dir":"箭牌AI客服","title":"箭牌AI客服","path":"20_客户项目/箭牌AI客服","start":null,"due":"2026-09-21","note":"跟秒哒结合 Agent API 开发，先出初版整理；2026-09-21 为截止卡点，今天继续代码生成","status":"active","items":[{"name":"箭牌-秒哒结合agentAPI开发初版","done":false,"due":null,"created":"2026-09-18"}],"kind":"milestone"},{"dir":"腾一科技","title":"腾一科技","path":"20_客户项目/腾一科技","start":null,"due":null,"note":"下一步：胜算与伐谋的 APS 排程，先整好胜算的数据基础，再用伐谋发起任务；2026-09-21 导出腾一科技胜算数据，在伐谋试跑并给出反馈","status":"active","items":[],"kind":"unscheduled"},{"dir":"multica配置","title":"multica配置","path":null,"start":"2026-09-18","due":null,"note":"未归类","status":null,"items":[],"kind":"milestone"},{"dir":"睿思智联fable5空返","title":"睿思智联fable5空返","path":null,"start":null,"due":null,"note":"进行中：已反馈给客户，等待客户回应","status":null,"items":[],"kind":"unscheduled"},{"dir":"Vibecoding小键盘，1. 蓝牙映射技术框架梳理 2.结合skill开放生态/agentAPI分析结合点","title":"Vibecoding小键盘，1. 蓝牙映射技术框架梳理 2.结合skill开放生态/agentAPI分析结合点","path":null,"start":null,"due":"2026-09-21","note":"Web Coding 子目录，明天作为卡点","status":null,"items":[],"project":"启明","kind":"milestone"},{"dir":"cdn参数技术细节补全","title":"cdn参数技术细节补全","path":null,"start":"2026-09-20","due":null,"note":"并入云计算框架知识整理","status":null,"items":[],"kind":"milestone"},{"dir":"百度智能云-具身智能合作","title":"百度智能云-具身智能合作","path":null,"start":"2026-09-20","due":null,"note":"整理具身智能合作方向 + 过往 Case 案例文档","status":null,"items":[],"kind":"milestone"},{"dir":"Ai搜索+ 小参数模型","title":"Ai搜索+ 小参数模型","path":null,"start":"2026-09-21","due":null,"note":"未归类","status":null,"items":[],"kind":"milestone"},{"dir":"拍学机，结合网盘打通举一反三","title":"拍学机，结合网盘打通举一反三","path":null,"start":"2026-09-21","due":null,"note":"未归类","status":null,"items":[],"kind":"milestone"},{"dir":"灵医-大昕生态 · 协调 PTSA 测试资源","title":"灵医-大昕生态 · 协调 PTSA 测试资源","path":null,"start":"2026-09-20","due":null,"note":"提供测试资源给大昕健康做对应测试","status":null,"project":"灵医-大昕生态","items":[],"kind":"milestone"},{"dir":"键盘传输协议 × DuMate 生态白皮书 × 启明 vibe Coding 结合","title":"键盘传输协议 × DuMate 生态白皮书 × 启明 vibe Coding 结合","path":null,"start":"2026-09-21","due":null,"note":"昨天已梳理一版键盘传输协议；今天结合 DuMate 生态宣传/宣讲白皮书与启明 vibe Coding 梳理做结合，产出返回启明端，评估后续推进","status":null,"project":"启明","items":[],"kind":"milestone"},{"dir":"腾一科技 · 胜算与伐谋 APS 排程","title":"腾一科技 · 胜算与伐谋 APS 排程","path":null,"start":"2026-09-21","due":null,"note":"先整好胜算的数据基础，再用伐谋发起任务；2026-09-21 导出腾一科技胜算数据，在伐谋试跑并给出反馈","status":null,"project":"腾一科技","items":[],"kind":"milestone"}],"recent":{"windowDays":30,"files":[{"project":"屈臣氏云手机","rel":"屈臣氏云手机/scrm/云手机知识体系/云手机-索引.md","name":"云手机-索引.md","made":"2026-09-21","title":"云手机-索引","type":"索引","summary":"屈臣氏云手机伙伴材料的来源知识卡与页码级证据台账入口。","from":"摘要"},{"project":"屈臣氏云手机","rel":"屈臣氏云手机/scrm/云手机知识体系/云手机V1.0交付与质检记录.md","name":"云手机V1.0交付与质检记录.md","made":"2026-09-21","title":"云手机V1.0交付与质检记录","type":"报告","summary":"记录V1.0成果、增量检查、附件内容及仍未关闭的交付条件。","from":"摘要"},{"project":"屈臣氏云手机","rel":"屈臣氏云手机/scrm/云手机知识体系/云手机公开证据与待确认问题.md","name":"云手机公开证据与待确认问题.md","made":"2026-09-21","title":"云手机公开证据与待确认问题","type":"报告","summary":"记录本轮官方核验的原始链接、日期、支持范围、材料冲突与厂商待答问题，界定哪些结论可内部使用。","from":"摘要"},{"project":"屈臣氏云手机","rel":"屈臣氏云手机/scrm/云手机知识体系/云手机官方能力核验.md","name":"云手机官方能力核验.md","made":"2026-09-21","title":"云手机官方能力核验","type":"报告","summary":"核验百度BAC、速享版、营销套件、磐玉魔盒及企星云的能力边界，并区分企微接口授权、伙伴宣称和实际交付条件。","from":"摘要"},{"project":"屈臣氏云手机","rel":"屈臣氏云手机/scrm/云手机知识体系/云手机待核实事项与FAQ.md","name":"云手机待核实事项与FAQ.md","made":"2026-09-21","title":"云手机待核实事项与FAQ","type":"分析","summary":"列明方案阻断、厂商询证出口、用户决策及不能承诺的口径。","from":"摘要"},{"project":"屈臣氏云手机","rel":"屈臣氏云手机/scrm/云手机知识体系/云手机方案选型与交付指南.md","name":"云手机方案选型与交付指南.md","made":"2026-09-21","title":"云手机方案选型与交付指南","type":"方案","summary":"六类条件方案、授权门槛、PoC验收及分项询价的内部工作指南。","from":"摘要"},{"project":"屈臣氏云手机","rel":"屈臣氏云手机/scrm/云手机知识体系/云手机白皮书_V1.0.md","name":"云手机白皮书_V1.0.md","made":"2026-09-21","title":"云手机白皮书 V1.0","type":"报告","summary":"分清百度底座、伙伴应用与定制集成，给出有证据边界的方案体系。","from":"摘要"},{"project":"屈臣氏云手机","rel":"屈臣氏云手机/scrm/云手机知识体系/云手机能力与伙伴对比矩阵.md","name":"云手机能力与伙伴对比矩阵.md","made":"2026-09-21","title":"云手机能力与伙伴对比矩阵","type":"分析","summary":"逐项列出底座、伙伴与集成能力及证据日期、前置和缺口。","from":"摘要"},{"project":"屈臣氏云手机","rel":"屈臣氏云手机/scrm/云手机知识体系/云手机证据台账.md","name":"云手机证据台账.md","made":"2026-09-21","title":"云手机证据台账","type":"调研笔记","summary":"三份伙伴材料的页码级主张台账，严格区分百度底座、伙伴应用、定制集成和面客宣传。","from":"摘要"},{"project":"屈臣氏云手机","rel":"屈臣氏云手机/scrm/云手机知识体系/企星云私域解决方案V4.1-来源知识卡.md","name":"企星云私域解决方案V4.1-来源知识卡.md","made":"2026-09-21","title":"来源知识卡：企星云私域解决方案 V4.1","type":"调研笔记","summary":"西兰云科技企星云的私域方案原件：云手机底座、自动化纳管、运营系统与私有化交付。","from":"摘要"},{"project":"屈臣氏云手机","rel":"屈臣氏云手机/scrm/云手机知识体系/屈臣氏私域营销SCRM提效方案V9.4-来源知识卡.md","name":"屈臣氏私域营销SCRM提效方案V9.4-来源知识卡.md","made":"2026-09-21","title":"来源知识卡：屈臣氏私域营销 SCRM 提效方案 V9.4","type":"调研笔记","summary":"西兰云科技面向屈臣氏的私域 SCRM 提效材料，含云机自动化、私有化交付与案例化收益口径。","from":"摘要"},{"project":"屈臣氏云手机","rel":"屈臣氏云手机/scrm/云手机知识体系/百度云手机私域营销解决方案-来源知识卡.md","name":"百度云手机私域营销解决方案-来源知识卡.md","made":"2026-09-21","title":"来源知识卡：百度云手机私域营销解决方案","type":"调研笔记","summary":"百度智能云材料将磐玉蜂巢、云手机平台与合作伙伴 SCRM 分层组合为私域营销方案。","from":"摘要"},{"project":"屈臣氏云手机","rel":"屈臣氏云手机/屈臣氏-索引.md","name":"屈臣氏-索引.md","made":"2026-09-21","title":"屈臣氏-索引","type":"索引","summary":"屈臣氏 × 百度伐谋 PoC 项目知识枢纽（2026-09-07 自 40_平台能力/伐谋项目 收拢）","from":"摘要"},{"project":"箭牌AI客服","rel":"箭牌AI客服/assistant-api/README.md","name":"README.md","made":"2026-09-21","title":"箭牌智家 AI 助手 · assistant-api","type":null,"summary":"Stage 1（CEEE-24）：可启动的服务骨架 + DuMate llm-gateway 适配器（真实 + mock）。 Stage 2（CEEE-25）：本系统 session service、意图路由、确定性 workflow 编排、知识检索 adapter、对外 SSE 事件协议。 Stage 3（CEEE…","from":"首段"},{"project":"箭牌AI客服","rel":"箭牌AI客服/assistant-api/reports/acceptance-report.md","name":"acceptance-report.md","made":"2026-09-21","title":"阶段验收报告 · 权限与安全基线 §8","type":null,"summary":"生成时间：2026-09-21T07:44:22.706Z Node v22.23.0 命令：node scripts/tc-report.mjs","from":"首段"},{"project":"箭牌AI客服","rel":"箭牌AI客服/assistant-api/reports/stage13-mock-home-verification.md","name":"stage13-mock-home-verification.md","made":"2026-09-21","title":"Stage 13 验收报告 · mock homeId 本地场景验证（CEEE-49）","type":null,"summary":"生成时间：2026-09-21 Node v22.23.0 命令入口：assistant-api/scripts/stage13-mock-home-verify.mjs（配合 scripts/net-guard.mjs 出网哨兵）","from":"首段"},{"project":"箭牌AI客服","rel":"箭牌AI客服/ceee38-review/CEEE-38-独立复验记录.md","name":"CEEE-38-独立复验记录.md","made":"2026-09-21","title":"CEEE-38 安全与恢复独立复验","type":null,"summary":"日期：2026-09-21。审查基线：b25609239b0e0506ab4b25387d0b8f5ca693ae4c，对照 0f672c6，分支 ceee-37/stage7-security-remediation。在产品有条件接受 CEEE-37、晋升 CEEE-38 后开展。审查当前 diff、调用方及测试；…","from":"首段"},{"project":"箭牌AI客服","rel":"箭牌AI客服/ceee41-review/CEEE-29-独立复验记录.md","name":"CEEE-29-独立复验记录.md","made":"2026-09-21","title":"CEEE-29 独立复验记录","type":null,"summary":"日期：2026-09-21。基线：0f672c6。范围：assistant-api/ 当前工程及 CEEE-27/28 变更、调用方与测试。未修改业务代码。以下命令从 assistant-api/ 执行，使用 Node.js v24.17.0；所有写适配器均为本地假实现，不连接真实 IoT，不需要真实凭证。","from":"首段"},{"project":"箭牌AI客服","rel":"箭牌AI客服/ceee41-review/CEEE-41-独立复验记录.md","name":"CEEE-41-独立复验记录.md","made":"2026-09-21","title":"CEEE-41 独立复验记录","type":null,"summary":"日期：2026-09-21。审查版本：ce29d3278c9d14f15ace7a59b89581c05bc0a553，对照 b256092；分支 ceee-37/stage7-security-remediation。Node.js v22.23.0。未修改业务代码，git diff --quiet ce29d32…","from":"首段"},{"project":"箭牌AI客服","rel":"箭牌AI客服/ceee41-review/pack-attach/acceptance-report.md","name":"acceptance-report.md","made":"2026-09-21","title":"阶段验收报告 · 权限与安全基线 §8","type":null,"summary":"生成时间：2026-09-21T09:50:14.294Z Node v22.23.0 命令：node scripts/tc-report.mjs","from":"首段"},{"project":"箭牌AI客服","rel":"箭牌AI客服/ceee47-evidence/CEEE-47-独立复验记录.md/CEEE-47-独立复验记录.md","name":"CEEE-47-独立复验记录.md","made":"2026-09-21","title":"CEEE-47 独立复验记录","type":null,"summary":"日期：2026-09-21。审查者：审查。Node.js：v22.23.0。","from":"首段"},{"project":"箭牌AI客服","rel":"箭牌AI客服/ceee47-evidence/tc-report/acceptance-report.md","name":"acceptance-report.md","made":"2026-09-21","title":"阶段验收报告 · 权限与安全基线 §8","type":null,"summary":"生成时间：2026-09-21T09:50:14.294Z Node v22.23.0 命令：node scripts/tc-report.mjs","from":"首段"},{"project":"箭牌AI客服","rel":"箭牌AI客服/ceee47-review/CEEE-29-独立复验记录.md","name":"CEEE-29-独立复验记录.md","made":"2026-09-21","title":"CEEE-29 独立复验记录","type":null,"summary":"日期：2026-09-21。基线：0f672c6。范围：assistant-api/ 当前工程及 CEEE-27/28 变更、调用方与测试。未修改业务代码。以下命令从 assistant-api/ 执行，使用 Node.js v24.17.0；所有写适配器均为本地假实现，不连接真实 IoT，不需要真实凭证。","from":"首段"},{"project":"箭牌AI客服","rel":"箭牌AI客服/ceee47-review/CEEE-41-独立复验记录.md","name":"CEEE-41-独立复验记录.md","made":"2026-09-21","title":"CEEE-41 独立复验记录","type":null,"summary":"日期：2026-09-21。审查版本：ce29d3278c9d14f15ace7a59b89581c05bc0a553，对照 b256092；分支 ceee-37/stage7-security-remediation。Node.js v22.23.0。未修改业务代码，git diff --quiet ce29d32…","from":"首段"},{"project":"箭牌AI客服","rel":"箭牌AI客服/ceee47-review/CEEE-47-独立复验记录.md","name":"CEEE-47-独立复验记录.md","made":"2026-09-21","title":"CEEE-47 独立复验记录","type":null,"summary":"日期：2026-09-21。审查者：审查。Node.js：v22.23.0。","from":"首段"},{"project":"箭牌AI客服","rel":"箭牌AI客服/ceee47-review/final-comment.md","name":"final-comment.md","made":"2026-09-21","title":null,"type":null,"summary":"[CEEE-47](mention://issue/01a0c338-1a94-7c74-9234-86cf868624a2) 独立复验 通过（限本地 mock 安全与恢复范围）。审查 1217be4 对照 ce29d32，未修改业务代码。","from":"首段"},{"project":"箭牌AI客服","rel":"箭牌AI客服/箭牌AI客服-索引.md","name":"箭牌AI客服-索引.md","made":"2026-09-21","title":"箭牌AI客服-索引","type":"索引","summary":"箭牌卫浴 AI 客服枢纽：小度 IoT 设备接入接口文档与项目框架梳理","from":"摘要"},{"project":"箭牌AI客服","rel":"箭牌AI客服/箭牌智家AI助手-MVP实施启动约束.md","name":"箭牌智家AI助手-MVP实施启动约束.md","made":"2026-09-21","title":"箭牌智家AI助手-MVP实施启动约束","type":"方案","summary":"CEEE-23 Stage 1 启动约束：P0 切片、DuMate 只做 llm-gateway、密钥 mock、安全闸门","from":"摘要"},{"project":"DumateApi接入","rel":"DumateApi接入/dumate方案/DuMate API介绍.md","name":"DuMate API介绍.md","made":"2026-09-20","title":"一、DuMate API介绍","type":null,"summary":"DuMate Agent API 是百度智能云 DuMate 面向开发者和企业客户的开放接口服务，核心是基于dumate云端Agent 能力提供的标准会话API接口，让具备二次开发能力的企业可以基于这套API配置自己的skill、文件和智能体并发起会话，无需管理复杂的云端agent基座。具体来说，双方负责的内容包括：","from":"首段"},{"project":"DumateApi接入","rel":"DumateApi接入/dumate方案/DuMate 两套 Agent API 接入方案汇报.md","name":"DuMate 两套 Agent API 接入方案汇报.md","made":"2026-09-20","title":null,"type":null,"summary":"DuMate 当前可确认有两套定位不同的接入方案：","from":"首段"},{"project":"DumateApi接入","rel":"DumateApi接入/Dumate生态宣传介绍白皮书-20260921.md","name":"Dumate生态宣传介绍白皮书-20260921.md","made":"2026-09-20","title":"Dumate 生态宣传介绍白皮书","type":null,"summary":"图 1 封面示意：能力入驻、企业集成、终端嵌入三条合作入口。","from":"首段"},{"project":"灵医-大昕生态","rel":"灵医-大昕生态/灵医接入指南.md","name":"灵医接入指南.md","made":"2026-09-20","title":null,"type":null,"summary":"https://01.baidu.com/ly-agent/platform/goods， 登录注册后返回左上角企业ID 选择三种需要测试的智能体名称：医疗对话助手，皮肤病咨询，健康科普","from":"首段"},{"project":"箭牌AI客服","rel":"箭牌AI客服/框架梳理.md","name":"框架梳理.md","made":"2026-09-20","title":"框架梳理","type":"项目文档","summary":null,"from":null},{"project":"箭牌AI客服","rel":"箭牌AI客服/箭牌智家AI助手-业务场景角色与价值目标基线.md","name":"箭牌智家AI助手-业务场景角色与价值目标基线.md","made":"2026-09-20","title":"箭牌智家AI助手-业务场景角色与价值目标基线","type":"方案","summary":"智家APP四场景产品基线：控制/建场景/百科/报修跳转，人工座席未立项","from":"摘要"},{"project":"箭牌AI客服","rel":"箭牌AI客服/箭牌智家AI助手-技术架构与系统边界设计.md","name":"箭牌智家AI助手-技术架构与系统边界设计.md","made":"2026-09-20","title":"箭牌智家AI助手-技术架构与系统边界设计","type":"技术方案","summary":"Stage 1 技术基线：逻辑分层+物理单体起步，四场景走确定性编排，含接口契约/MVP 切片/ADR 与风险","from":"摘要"},{"project":"箭牌AI客服","rel":"箭牌AI客服/箭牌智家AI助手-权限与安全基线.md","name":"箭牌智家AI助手-权限与安全基线.md","made":"2026-09-20","title":"箭牌智家AI助手-权限与安全基线","type":"技术方案","summary":"默认拒绝的RBAC/ABAC权限基线：矩阵、动作状态机、审计与测试用例","from":"摘要"},{"project":"DumateApi接入","rel":"DumateApi接入/DuMate Agent API 技能管理.md","name":"DuMate Agent API 技能管理.md","made":"2026-09-18","title":"DuMate Agent API 技能管理","type":"技术文档","summary":"DuMate Agent API 技能管理接口：五个接口的参数、响应与调用示例。","from":"摘要"},{"project":"DumateApi接入","rel":"DumateApi接入/DuMate Agent API 能力分析.md","name":"DuMate Agent API 能力分析.md","made":"2026-09-18","title":"DuMate Agent API 能力分析","type":"分析","summary":"结合官方 Agent API 文档与管控/运行时架构图，梳理 DuMate Agent 的对象模型、接口能力、调用链路，以及公开 API 与平台内部能力的边界。","from":"摘要"},{"project":"DumateApi接入","rel":"DumateApi接入/DumateApi接入-索引.md","name":"DumateApi接入-索引.md","made":"2026-09-18","title":"DumateApi接入-索引","type":"索引","summary":"DuMate Agent API 对外接入枢纽：接口能力分析、消费行业运营助手 Demo、联想懂的对接材料","from":"摘要"},{"project":"DumateApi接入","rel":"DumateApi接入/方案介绍/dumateapi方案.md","name":"dumateapi方案.md","made":"2026-09-18","title":"DuMate Agent API 方案","type":"方案","summary":"DuMate Agent API 对客方案：产品定位、API 对象与能力、成本报价、应用场景案例与技术架构。","from":"摘要"},{"project":"DumateApi接入","rel":"DumateApi接入/方案介绍/演讲线路梳理.md","name":"演讲线路梳理.md","made":"2026-09-18","title":"演讲线路梳理","type":"演示脚本","summary":"对客沟通讲述主线：从 ICT 场景切入，串起模型与 OCR 储备、DuMate 定位、Agent API 嵌入方式与接入流程。","from":"摘要"},{"project":"DumateApi接入","rel":"DumateApi接入/联想懂的×DuMate_交流知识备份.md","name":"联想懂的×DuMate_交流知识备份.md","made":"2026-09-18","title":"联想懂的 × DuMate 交流知识备份","type":"交流准备","summary":"面向 2026-09-17 业务交流的备战材料：把联想懂的主营业务拆到技术栈层，逐域给出我方对应能力、接话点与缺口，并附 Q&A 预演、术语对照、红线清单与待拉齐事项。","from":"摘要"},{"project":"DumateApi接入","rel":"DumateApi接入/联想懂的×DuMate_合作方向分析.md","name":"联想懂的×DuMate_合作方向分析.md","made":"2026-09-18","title":"联想懂的 × DuMate 合作方向分析","type":"分析","summary":"基于联想懂的《通信业务介绍》（20260331 V3）与 DuMate Agent API 能力边界，梳理对方主营业务、双方能力互补点，以及可探讨的合作方向与谈判要点。","from":"摘要"},{"project":"DumateApi接入","rel":"DumateApi接入/连接运营助手-系统设计架构.md","name":"连接运营助手-系统设计架构.md","made":"2026-09-18","title":"连接运营助手 · 系统设计架构","type":"设计","summary":"以《DuMate接口文档》（三星对接）为接口基线，结合本机实测的 Agent API 契约，给出「连接运营助手」演示系统（对话 / 产物中心 / 定时日报三视图）的分层架构、对象模型、关键时序、产物交付、本地调度与生产化路径。","from":"摘要"},{"project":"启明","rel":"启明/webcoding/wb生态需求提需.md","name":"wb生态需求提需.md","made":"2026-09-18","title":"wb生态需求提需","type":"笔记","summary":"wb 生态提需备忘：白皮书定义办公智能体接入硬件范式，快捷键开放是卡点","from":"摘要"},{"project":"启明","rel":"启明/webcoding/启明webcoding-索引.md","name":"启明webcoding-索引.md","made":"2026-09-18","title":"启明 WebCoding 项目索引","type":"索引","summary":"启明 WebCoding 项目索引：CAD POC、Vibe Coding 小键盘调研/方案，以及 DuMate 智能键盘产品梳理","from":"摘要"},{"project":"启明","rel":"启明/webcoding/智能键盘-客户讲解.md","name":"智能键盘-客户讲解.md","made":"2026-09-18","title":"智能键盘-客户讲解","type":"讲解","summary":"面向客户讲解 DuMate 智能键盘的痛点画像、优势点与话术：六条赛道/客户痛点、八条方案优势、硬件规格与配置、Q&A 与演示建议","from":"摘要"},{"project":"启明","rel":"启明/webcoding/智能键盘-硬件知识补全.md","name":"智能键盘-硬件知识补全.md","made":"2026-09-18","title":"智能键盘-硬件知识补全","type":"知识","summary":"DuMate 智能键盘的硬件通识补全：从轴体/热插拔/键帽到旋钮/圆屏/马达/连接逐层补课，标注本项目已知与待启明确认的参数，并整理客户可能追问的硬件问题与建议回答","from":"摘要"},{"project":"启明","rel":"启明/云端小程序/启明云端小程序-索引.md","name":"启明云端小程序-索引.md","made":"2026-09-18","title":"启明云端小程序记录索引","type":"索引","summary":"启明云端小程序项目笔记索引","from":"摘要"},{"project":"启明","rel":"启明/启明-索引.md","name":"启明-索引.md","made":"2026-09-18","title":"启明-索引","type":"索引","summary":"启明客户级枢纽：WebCoding 智能键盘（DuMate 物理入口）与云端小程序（足球数据）两条线","from":"摘要"},{"project":"小贝Ball世界杯","rel":"小贝Ball世界杯/小贝Ball世界杯-索引.md","name":"小贝Ball世界杯-索引.md","made":"2026-09-18","title":"小贝Ball世界杯-索引","type":"索引","summary":"小贝Ball世界杯数据接口交付包索引","from":"摘要"},{"project":"屈臣氏云手机","rel":"屈臣氏云手机/scrm/面客准备_屈臣氏xSCRM_云手机方案.md","name":"面客准备_屈臣氏xSCRM_云手机方案.md","made":"2026-09-18","title":"面客准备：屈臣氏 × SCRM 云手机方案","type":"方案提案","summary":"屈臣氏 SCRM 背调对应的百度云手机面客准备：能力映射、案例与提问清单","from":"摘要"},{"project":"康佳","rel":"康佳/dumate/小度搭子-接口与工作流.md","name":"小度搭子-接口与工作流.md","made":"2026-09-18","title":"小度搭子-接口与工作流","type":"笔记","summary":"小度搭子各品类的接口匹配、定制功能模块背后的接口组成排布与 workflow（已与 DuMate对接.pdf 真实接口逐条校准）","from":"摘要"},{"project":"康佳","rel":"康佳/dumate/小度搭子-调研与能力匹配报告.md","name":"小度搭子-调研与能力匹配报告.md","made":"2026-09-18","title":"小度搭子-调研与能力匹配报告","type":"报告","summary":"小度搭子产品形态、三设备共同能力原子与底座接口的能力匹配调研","from":"摘要"},{"project":"康佳","rel":"康佳/dumate/小度搭子.md","name":"小度搭子.md","made":"2026-09-18","title":"小度搭子","type":"调研笔记","summary":"三款小度设备 × 场景 × 智能体类型的能力入口矩阵","from":"摘要"},{"project":"康佳","rel":"康佳/dumate/康佳dumate-索引.md","name":"康佳dumate-索引.md","made":"2026-09-18","title":"康佳dumate-索引","type":"索引","summary":"康佳 DuMate 电视端项目枢纽：电视端精选能力 MVP 方案","from":"摘要"},{"project":"康佳","rel":"康佳/康佳-索引.md","name":"康佳-索引.md","made":"2026-09-18","title":"康佳-索引","type":"索引","summary":"康佳客户级枢纽：DuMate 电视端 + 小度搭子，以及百度百科明星识别两条线","from":"摘要"},{"project":"康佳","rel":"康佳/百科/百度百科明星识别方案.md","name":"百度百科明星识别方案.md","made":"2026-09-18","title":"百度百科明星识别方案","type":"技术方案","summary":"本地映射优先、名称验证、候选词条兜底的百科明星识别流程","from":"摘要"},{"project":"康佳","rel":"康佳/百科/职业匹配命中测试.md","name":"职业匹配命中测试.md","made":"2026-09-18","title":"职业匹配命中测试","type":"测试报告","summary":"按职业 label 造真人测试集，用千帆百度百科接口实测 lemma_desc 命中率与误伤情况，据此补入「音乐家」「演奏者」两词。","from":"摘要"},{"project":"康佳","rel":"康佳/百科/职业匹配表.md","name":"职业匹配表.md","made":"2026-09-18","title":"职业匹配","type":"方案","summary":"百度百科 lemma_desc 明星职业筛选词表。有共性标识走模糊匹配，无共同标识才单列。","from":"摘要"},{"project":"灵医-大昕生态","rel":"灵医-大昕生态/灵医-大昕生态-索引.md","name":"灵医-大昕生态-索引.md","made":"2026-09-18","title":"灵医-大昕生态-索引","type":"索引","summary":"灵医 × 大昕生态枢纽：01bot 医疗垂类 Agent 的能力与合作要点","from":"摘要"},{"project":"灵医-大昕生态","rel":"灵医-大昕生态/路径.md","name":"路径.md","made":"2026-09-18","title":"路径","type":"笔记","summary":"灵医 01bot 路径备忘：开发文档入口与医药资质大模型的收费口径","from":"摘要"},{"project":"箭牌AI客服","rel":"箭牌AI客服/iot接口文档/场景创建.md","name":"场景创建.md","made":"2026-09-18","title":"箭牌 IoT 接口 - 场景创建","type":"技术文档","summary":"箭牌 IoT 三方云对接 AI 接口文档：设备控制、场景创建、设备列表三组接口的参数、枚举与返回结构。","from":"摘要"},{"project":"箭牌AI客服","rel":"箭牌AI客服/iot接口文档/设备创建.md","name":"设备创建.md","made":"2026-09-18","title":"箭牌 IoT 接口 - 设备创建","type":"技术文档","summary":"箭牌 IoT 三方云对接 AI 接口文档：设备控制、场景创建、设备列表三组接口的参数、枚举与返回结构。","from":"摘要"},{"project":"箭牌AI客服","rel":"箭牌AI客服/iot接口文档/设备指引.md","name":"设备指引.md","made":"2026-09-18","title":"箭牌 IoT 接口 - 设备指引","type":"技术文档","summary":"箭牌 IoT 三方云对接 AI 接口文档：设备控制、场景创建、设备列表三组接口的参数、枚举与返回结构。","from":"摘要"},{"project":"箭牌AI客服","rel":"箭牌AI客服/iot接口文档/设备控制.md","name":"设备控制.md","made":"2026-09-18","title":"箭牌 IoT 接口 - 设备控制","type":"技术文档","summary":"箭牌 IoT 三方云对接 AI 接口文档：设备控制、场景创建、设备列表三组接口的参数、枚举与返回结构。","from":"摘要"},{"project":"箭牌AI客服","rel":"箭牌AI客服/iot接口文档/设备说明.md","name":"设备说明.md","made":"2026-09-18","title":"箭牌 IoT 接口 - 设备说明","type":"技术文档","summary":"箭牌 IoT 三方云对接 AI 接口文档：设备控制、场景创建、设备列表三组接口的参数、枚举与返回结构。","from":"摘要"},{"project":"腾一科技","rel":"腾一科技/伐谋测试/APS_v2_1_append/README.md","name":"README.md","made":"2026-09-18","title":"APS v2.1 纯新增补充数据包（首批）","type":null,"summary":"状态更正：未完成草稿，禁止导入。 当前存在已知时间、工时和任务覆盖问题，详见 导入阻塞说明；以下数量仅是文件行数，不是业务验收结果。","from":"首段"},{"project":"腾一科技","rel":"腾一科技/伐谋测试/APS_v2_1_append/导入阻塞说明.md","name":"导入阻塞说明.md","made":"2026-09-18","title":"v2.1 导入阻塞说明","type":null,"summary":"本目录是未完成业务验证的草稿，禁止直接导入。行数达到目标不代表排产数据合格。","from":"首段"},{"project":"腾一科技","rel":"腾一科技/伐谋测试/伐谋×胜算组合方案可行性分析.md","name":"伐谋×胜算组合方案可行性分析.md","made":"2026-09-18","title":"伐谋×胜算组合方案可行性分析","type":"方案","summary":"结合 DuMate×伐谋零售案例与胜算平台文档，评估「伐谋演化最优脚本回嵌业务系统 + 胜算本体做业务匹配与问数取数」的可行性：方向成立、互补性强，需先定组合模式、evaluator 规则来源与数据出域边界三项决策。","from":"摘要"},{"project":"腾一科技","rel":"腾一科技/伐谋测试/伐谋APS优化案例.md","name":"伐谋APS优化案例.md","made":"2026-09-18","title":"伐谋 APS 优化案例","type":"技术验证","summary":"突发订单插入既有计划的 APS 优化案例设计：本体语义转数据集与硬约束","from":"摘要"},{"project":"腾一科技","rel":"腾一科技/伐谋测试/回复.md","name":"回复.md","made":"2026-09-18","title":"回复","type":"笔记","summary":"对数据补全指令的回复：13 项原始数据问题逐项判断，上报两个硬阻塞","from":"摘要"},{"project":"腾一科技","rel":"腾一科技/伐谋测试/数据报告校验.md","name":"数据报告校验.md","made":"2026-09-18","title":"数据报告校验","type":"笔记","summary":"只读全览分析任务的指令原文：盘点 APS 本体、Logic 与 mock 数据","from":"摘要"},{"project":"腾一科技","rel":"腾一科技/伐谋测试/数据结构.md","name":"数据结构.md","made":"2026-09-18","title":"APS 数据结构与导入规范","type":"技术文档","summary":"APS 本体实测结构与导入规范：9 对象、11 关系、27 Action","from":"摘要"},{"project":"腾一科技","rel":"腾一科技/伐谋测试/数据补全.md","name":"数据补全.md","made":"2026-09-18","title":"数据补全","type":"笔记","summary":"给 AI 的数据补全指令原文：第一阶段补全 APS 基础数据与突发订单素材","from":"摘要"},{"project":"腾一科技","rel":"腾一科技/伐谋测试/腾一APS 工厂项目 · 数据建模与 mock 数据全览报告.md","name":"腾一APS 工厂项目 · 数据建模与 mock 数据全览报告.md","made":"2026-09-18","title":"腾一APS 工厂项目 · 数据建模与 mock 数据全览报告","type":"报告","summary":"APS 工厂只读全览报告：9 对象 46 实例，盘点排产语义缺口与硬约束现状","from":"摘要"},{"project":"腾一科技","rel":"腾一科技/框架.md","name":"框架.md","made":"2026-09-18","title":"框架","type":"方案","summary":"腾一组合方案框架：胜算以点带面建本体，伐谋自迭代排程算法","from":"摘要"},{"project":"腾一科技","rel":"腾一科技/腾一科技-索引.md","name":"腾一科技-索引.md","made":"2026-09-18","title":"腾一科技-索引","type":"索引","summary":"腾一科技枢纽：装备制造智能排程，伐谋（APS 调优）+ 胜算（本体底座）组合方案与 APS 测试","from":"摘要"},{"project":"腾一科技","rel":"腾一科技/腾一胜算/factory_ontology_design.md","name":"factory_ontology_design.md","made":"2026-09-18","title":"工厂生产运营数据底座本体设计","type":"技术方案","summary":"电子制造工厂生产运营数据底座的本体设计：业务对象与三条问数工作流","from":"摘要"},{"project":"腾一科技","rel":"腾一科技/腾一胜算/腾一接入胜算方案评估.md","name":"腾一接入胜算方案评估.md","made":"2026-09-18","title":"腾一接入胜算方案评估","type":"方案","summary":"基于《百度胜算产品介绍 v2》与腾一《AI Engine 与百度胜算接入评估说明》，评估「模式A为主 + 模式B对照」接入架构的可行性，并给出各模式需评估的点与关键风险。","from":"摘要"},{"project":"启明","rel":"启明/webcoding/智能键盘-演示页搭建工作流.md","name":"智能键盘-演示页搭建工作流.md","made":"2026-09-17","title":"智能键盘-演示页搭建工作流","type":"技术文档","summary":"DuMate 智能键盘演示页（demo/index.html）的搭建过程：参数化 3D 建模、状态机驱动、无头 Chrome 实拍验证闭环，以及 three.js 逐部件技法","from":"摘要"},{"project":"腾一科技","rel":"腾一科技/伐谋测试/APS基准模拟数据_v1/README.md","name":"README.md","made":"2026-09-15","title":"APS 基准模拟数据 v1","type":null,"summary":"本目录是依据 数据结构 生成的第一版小规模基准数据包，目标是先验证字段、ID、外键和导入格式，不是最终 FaMou 训练集。","from":"首段"},{"project":"腾一科技","rel":"腾一科技/腾一科技×百度_装备制造智能排程组合方案.md","name":"腾一科技×百度_装备制造智能排程组合方案.md","made":"2026-09-15","title":"腾一科技 × 百度：装备制造智能排程组合方案立项","type":"方案","summary":"面向腾一装备制造客户的组合立项：胜算 AIFDE 按生产逻辑构建工厂本体并以 MCP / API 发布；Data Agent 协助梳理 APS 数据集与硬约束；伐谋完成算法自迭代，结果返回 DuMate 生成看板。腾一保留入口与审批。","from":"摘要"},{"project":"启明","rel":"启明/webcoding/智能键盘-产品梳理与交互展示.md","name":"智能键盘-产品梳理与交互展示.md","made":"2026-09-11","title":"智能键盘-产品梳理与交互展示","type":"方案","summary":"回退原 17 页键盘主方案：硬件形态、出厂原生按键 + 1/2 预置 DuMate 高频快捷键，以及第一版 Three.js 交互演示","from":"摘要"},{"project":"启明","rel":"启明/webcoding/智能键盘-方案决策与会议纪要PlanB.md","name":"智能键盘-方案决策与会议纪要PlanB.md","made":"2026-09-10","title":"智能键盘-方案决策与会议纪要PlanB","type":"方案","summary":"智能键盘方案 grill 决策记录：主叙事维持 DuMate 键盘、开源只开客户端、会议纪要功能拆出主线独立成 Plan B（三条技术路线+可行性+待定项）","from":"摘要"},{"project":"腾一科技","rel":"腾一科技/腾一胜算/AIFDE_APS智能排产标杆案例Demo方案.md","name":"AIFDE_APS智能排产标杆案例Demo方案.md","made":"2026-09-02","title":"AIFDE 工厂数据底座与本体构建 Demo 方案","type":"方案","summary":"先写清工厂生产运营的需求与问数工作流，再交给 AIFDE 生成本体、mock 样本数据，最后用 Data Agent 做几组问数取数。当次任务口径留在对话输入，不写入本体。","from":"摘要"},{"project":"威盛康","rel":"威盛康/威盛康图片上传方式A-客户端直连实施.md","name":"威盛康图片上传方式A-客户端直连实施.md","made":"2026-09-01","title":"威盛康图片上传方式A-客户端直连实施","type":"笔记","summary":"威盛康 RTC 图片上传方式 A（AK/SK 客户端直连）的实施时序、H5 改动清单与排查步骤","from":"摘要"},{"project":"威盛康","rel":"威盛康/威盛康图片传输失败原因.md","name":"威盛康图片传输失败原因.md","made":"2026-09-01","title":"威盛康图片传输失败原因","type":"笔记","summary":"威盛康 RTC 图片上传链路说明：方式 A/B 时序、鉴权架构与图片无法上传/识别时的排查顺序","from":"摘要"},{"project":"威盛康","rel":"威盛康/威盛康拍照识图营养数据.md","name":"威盛康拍照识图营养数据.md","made":"2026-09-01","title":"威盛康拍照识图营养数据","type":"笔记","summary":"威盛康拍照识图获取营养数据：RTC 图片链路 + 固定 JSON 营养字段与整体数据流","from":"摘要"},{"project":"启明","rel":"启明/webcoding/vibecoding 小键盘商业化方案.md","name":"vibecoding 小键盘商业化方案.md","made":"2026-08-28","title":"Vibe Coding 小键盘商业化方案","type":"方案","summary":"启明小键盘做 DuMate 物理入口的商业化方案：硬件带人进软件，ASR/订阅把一次性硬件单转成持续收入","from":"摘要"},{"project":"康佳","rel":"康佳/dumate/DuMate-TV-产品方案.md","name":"DuMate-TV-产品方案.md","made":"2026-08-26","title":"DuMate-TV-产品方案","type":"方案","summary":"DuMate 电视端精选能力产品方案：家庭大屏 AI 助手，轻量客户端 + 场景接入层 + 云端能力","from":"摘要"}],"others":{"DumateApi接入":15,"启明":4,"屈臣氏云手机":5,"康佳":2,"箭牌AI客服":150,"腾一科技":21}}};
 
 const DAY = 86400000;
 const ms = (s) => new Date(s + 'T00:00:00Z').getTime();
 const fmt = (t) => new Date(t).toISOString().slice(5, 10).replace('-', '/');
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const NOW = ms(DATA.today);
 
 const rows = DATA.rows;
 const dated = rows.filter((r) => r.start || r.due);
 const undated = rows.filter((r) => !r.start && !r.due);
-
-document.getElementById('asof').textContent = '截至 ' + DATA.today;
-
-// 统计条
 const s = DATA.stat;
-document.getElementById('stats').innerHTML = [
+
+document.getElementById('asof').textContent = DATA.today;
+document.getElementById('gen').textContent = 'gantt-assistant';
+
+// ---------- KPI ----------
+const recentFiles = (DATA.recent && DATA.recent.files) || [];
+const week = recentFiles.filter((f) => ms(f.made) >= NOW - 6 * DAY).length;
+const tiles = [
   ['', s.total, '总行数'],
   ['', s.scheduled, '已排期（有起止）'],
   [s.milestone ? 'warn' : '', s.milestone, '只有单端日期'],
   [s.unscheduled ? 'miss' : '', s.unscheduled, '待补起止'],
-  ['', s.finished || 0, '已完成（不显示）'],
-].map(([c, v, t]) => '<div class="stat ' + c + '"><b>' + v + '</b><span>' + t + '</span></div>').join('');
+  ['ok', s.finished || 0, '已完成（不显示）'],
+  ['acc', week, '近 7 天新增文件'],
+];
+document.getElementById('stats').innerHTML = tiles
+  .map(([c, v, t]) => '<div class="stat ' + c + '"><b>' + v + '</b><span>' + t + '</span></div>').join('');
 
 const body = document.getElementById('body');
+const nav = [];
+const parts = [];
 
-if (!dated.length) {
-  body.innerHTML = '<div class="card"><h2>还没有可以画的时间线</h2><div class="empty">'
-    + '<b>缺的是日期，不是图</b>'
-    + '采集和渲染都通了：读到了 <code>' + s.total + '</code> 行，其中客户项目来自 <code>20_客户项目/</code> 的索引，'
-    + '关联到项目的提醒 <code>' + (s.reminders - s.unmatched) + '/' + s.reminders + '</code> 条。'
-    + '但这些项目既没有开始日期也没有截止日期，提醒事项那边也只有一条填了截止日，所以画不出条。'
-    + '<br><br>补一句话就行，比如「箭牌 9/20 到 9/30」，我把日期写进 <code>schedule.json</code> 再重跑。'
-    + '</div></div>';
-} else {
+// ---------- 时间线 ----------
+function timeline() {
+  if (!dated.length) {
+    return '<div class="card" id="s-timeline"><h2>时间线</h2><div class="empty">'
+      + '<b>缺的是日期，不是图</b>'
+      + '采集和渲染都通了：读到了 <code>' + s.total + '</code> 行，其中客户项目来自 <code>20_客户项目/</code> 的索引，'
+      + '关联到项目的提醒 <code>' + (s.reminders - s.unmatched) + '/' + s.reminders + '</code> 条。'
+      + '但这些项目既没有开始日期也没有截止日期，提醒事项那边也没有填截止日的，所以画不出条。'
+      + '<br><br>补一句话就行，比如「箭牌 9/20 到 9/30」，我把日期写进 <code>schedule.json</code> 再重跑。'
+      + '</div></div>';
+  }
+
   // 日期域，两端各留一天，免得条贴边
   let lo = Infinity, hi = -Infinity;
   for (const r of dated) for (const d of [r.start, r.due]) if (d) { lo = Math.min(lo, ms(d)); hi = Math.max(hi, ms(d)); }
   lo -= DAY; hi += DAY;
   const span = hi - lo;
   const pct = (t) => ((t - lo) / span) * 100;
-  // 靠右的标签翻到左边，否则溢出容器被裁
-  const side = (p) => (p > 76 ? ' lft' : '');
-  const now = ms(DATA.today);
+  const side = (p) => (p > 74 ? ' lft' : '');
 
-  // 刻度：跨度大就按月，小就按天
+  // 刻度跨度大就按月，小就按天
   const days = Math.round(span / DAY);
   const step = days > 120 ? 30 : days > 45 ? 14 : days > 14 ? 7 : 1;
-  let ticks = '';
-  const lines = [];
-  for (let t = lo; t <= hi; t += step * DAY) {
+  let ticks = '', lines = '', bands = '';
+  for (let t = lo, i = 0; t <= hi; t += step * DAY, i++) {
     const p = pct(t);
     ticks += '<div class="tick" style="left:' + p + '%">' + fmt(t) + '</div>';
-    lines.push('<div class="gline" style="left:' + p + '%"></div>');
+    lines += '<div class="gline" style="left:' + p + '%"></div>';
+    // 隔列加一层极淡底色，读横向位置时不用一路数到刻度
+    if (i % 2) bands += '<div class="band" style="left:' + p + '%;width:' + ((step * DAY / span) * 100) + '%"></div>';
   }
-  const todayLine = (now >= lo && now <= hi)
-    ? '<div class="today" style="left:' + pct(now) + '%"></div><div class="todaylab' + side(pct(now)) + '" style="left:' + pct(now) + '%">今天</div>'
+  const todayLine = (NOW >= lo && NOW <= hi)
+    ? '<div class="today" style="left:' + pct(NOW) + '%"></div><div class="todaylab' + side(pct(NOW)) + '" style="left:' + pct(NOW) + '%">今天</div>'
     : '';
 
+  // 状态并进那一个日期标签里。之前另放一个 chip，结果和日期标签叠在一起，
+  // 还把「创建」说了两遍，渲染出来是「09/21 截止逾期」这种糊成一片的东西。
+  const status = (r) => {
+    if (r.status === 'done') return { text: '已完成', cls: ' done' };
+    if (!r.due) return null;
+    const d = Math.round((ms(r.due) - NOW) / DAY);
+    if (d < 0) return { text: '逾期 ' + (-d) + ' 天', cls: ' over' };
+    if (d === 0) return { text: '今天到期', cls: ' now' };
+    if (d <= 7) return { text: '剩 ' + d + ' 天', cls: ' soon' };
+    return null;
+  };
+
   const rowHtml = (r) => {
-    const st = r.status === 'done' ? 'done' : null;
-    const over = r.due && r.due < DATA.today && r.status !== 'done';
+    const done = r.status === 'done';
+    const over = r.due && r.due < DATA.today && !done;
+    const badge = r.items.length ? '<i>' + r.items.length + ' 项</i>' : '';
+    const st = status(r);
+    const tail = st ? ' · ' + st.text : '';
+    const cls = st ? st.cls : '';
     let bar;
     if (r.kind === 'bar') {
       const a = pct(ms(r.start)), b = pct(ms(r.due));
       const w = Math.max(b - a, 0.6);
       const label = r.items.length ? r.items.length + ' 项待办' : '';
-      bar = '<div class="bar ' + (over ? 'over' : '') + (st ? ' ' + st : '') + '" style="left:' + a + '%;width:' + w + '%">'
-        + (label && w > 16 ? '<span class="inl">' + label + '</span>' : '')
-        + '<span class="lbl' + side(b) + '">' + fmt(ms(r.start)) + '–' + fmt(ms(r.due)) + (over ? ' · 逾期' : '') + '</span></div>';
+      bar = '<div class="bar' + (over ? ' over' : '') + (done ? ' done' : '') + '" style="left:' + a + '%;width:' + w + '%">'
+        + (label && w > 17 ? '<span class="inl">' + label + '</span>' : '')
+        + '<span class="lbl' + side(b) + cls + '">' + fmt(ms(r.start)) + '–' + fmt(ms(r.due)) + tail + '</span></div>';
     } else {
       const at = pct(ms(r.due || r.start));
-      bar = '<div class="bar mile" style="left:' + at + '%"><span class="lbl' + side(at) + '">' + fmt(ms(r.due || r.start))
-        + (r.due ? ' 截止' : ' 创建') + '</span></div>';
+      bar = '<div class="bar mile' + (over ? ' over' : '') + '" style="left:' + at + '%"><span class="lbl' + side(at) + cls + '">'
+        + fmt(ms(r.due || r.start)) + (r.due ? ' 截止' : ' 创建') + tail + '</span></div>';
     }
-    const sub = r.items.length ? '<em>' + r.items.length + '</em>' : '';
-    return '<div class="row"><div class="name" title="' + esc(r.title) + '">' + esc(r.title) + sub + '</div>'
+    return '<div class="row"><div class="name" title="' + esc(r.title) + '"><span style="overflow:hidden;text-overflow:ellipsis">'
+      + esc(r.title) + '</span>' + badge + '</div>'
       + '<div class="track">' + bar + '</div></div>';
   };
 
-  body.innerHTML = '<div class="card"><h2>时间线<small>' + fmt(lo + DAY) + ' – ' + fmt(hi - DAY) + '</small></h2>'
+  const bars = dated.filter((r) => r.kind === 'bar');
+  const miles = dated.filter((r) => r.kind !== 'bar');
+  let rowsHtml = '';
+  if (bars.length) rowsHtml += '<div class="grp"><span>已排期 · ' + bars.length + '</span><span></span></div>' + bars.map(rowHtml).join('');
+  if (miles.length) rowsHtml += '<div class="grp"><span>单端日期 · ' + miles.length + '</span><span></span></div>' + miles.map(rowHtml).join('');
+
+  // 图例只列图上真有的东西，别为一个 0 条的类别留个色块
+  const legend = [
+    bars.length ? '<span><i class="b"></i>已排期</span>' : '',
+    miles.length ? '<span><i class="m"></i>单端日期</span>' : '',
+    dated.some((r) => r.due && r.due < DATA.today && r.status !== 'done') ? '<span><i class="o"></i>已逾期</span>' : '',
+    dated.some((r) => r.status === 'done') ? '<span><i class="d"></i>已完成</span>' : '',
+  ].filter(Boolean).join('');
+
+  return '<div class="card" id="s-timeline"><h2>时间线<small>' + fmt(lo + DAY) + ' – ' + fmt(hi - DAY) + '</small></h2>'
+    + (legend ? '<div class="legend">' + legend + '</div>' : '')
     + '<div class="scroll"><div class="chart">'
     + '<div class="axis"><div></div><div class="ticks">' + ticks + '</div></div>'
-    + '<div class="rows">' + todayLine + lines.join('') + dated.map(rowHtml).join('') + '</div>'
+    + '<div class="rows"><div class="bands">' + bands + '</div>' + todayLine + lines + rowsHtml + '</div>'
     + '</div></div></div>';
+}
 
-  const cells = (r) => '<td>' + esc(r.title) + (r.project ? '<span class="sub">' + esc(r.project) + '</span>' : '') + '</td>';
-  const itemsCell = (r) => '<td>' + (r.items.length
-    ? r.items.map((i) => esc(i.name)).join('<span class="sub"></span>')
-    : '<span style="color:var(--dim)">—</span>') + '</td>';
-  const noteCell = (r) => '<td>' + (r.note && r.note !== '未归类'
-    ? esc(r.note) : '<span style="color:var(--dim)">' + esc(r.note || '—') + '</span>') + '</td>';
+// ---------- 明细表 ----------
+const titleCell = (r) => '<td>' + esc(r.title) + (r.project ? '<span class="sub">' + esc(r.project) + '</span>' : '') + '</td>';
+const itemsCell = (r) => '<td>' + (r.items.length
+  ? r.items.map((i) => '<span class="todo">' + esc(i.name) + (i.done ? ' ✓' : '') + '</span>').join('')
+  : '<span style="color:var(--dim)">—</span>') + '</td>';
+const noteCell = (r) => '<td>' + (r.note && r.note !== '未归类'
+  ? esc(r.note) : '<span style="color:var(--dim)">' + esc(r.note || '—') + '</span>') + '</td>';
+// 逾期单独标出来，别让人自己去和今天比
+const dueCell = (r) => {
+  if (!r.due) return '<td class="mono">—</td>';
+  const over = r.due < DATA.today && r.status !== 'done';
+  return '<td class="mono">' + r.due + (over ? ' <span class="pill over">逾期</span>' : '') + '</td>';
+};
 
-  // 有日期的排完图，再列一张明细，把进展备注带出来
+function tables() {
+  let html = '';
   if (dated.length) {
-    body.innerHTML += '<div class="card"><h2>有日期的条目<small>' + dated.length + ' 项</small></h2>'
+    html += '<div class="card" id="s-dated"><h2>有日期的条目<small>' + dated.length + ' 项</small></h2>'
       + '<table><thead><tr><th>条目</th><th>开始</th><th>截止</th><th>进展 / 说明</th><th>关联待办</th></tr></thead><tbody>'
-      + dated.map((r) => '<tr>' + cells(r)
-        + '<td class="mono">' + (r.start || '—') + '</td><td class="mono">' + (r.due || '—') + '</td>'
+      + dated.map((r) => '<tr>' + titleCell(r)
+        + '<td class="mono">' + (r.start || '—') + '</td>' + dueCell(r)
         + noteCell(r) + itemsCell(r) + '</tr>').join('')
       + '</tbody></table></div>';
   }
-
   if (undated.length) {
-    body.innerHTML += '<div class="card"><h2>待补起止<small>' + undated.length + ' 项</small></h2>'
+    html += '<div class="card" id="s-undated"><h2>待补起止<small>' + undated.length + ' 项</small></h2>'
+      + '<p class="card-sub">这些项目还没有起止日期，补一句话就能上图。</p>'
       + '<table><thead><tr><th>项目</th><th>状态</th><th>进展 / 说明</th><th>关联待办</th></tr></thead><tbody>'
-      + undated.map((r) => '<tr>' + cells(r) + '<td><span class="pill">' + esc(r.status || '—') + '</span></td>'
+      + undated.map((r) => '<tr>' + titleCell(r) + '<td><span class="pill">' + esc(r.status || '—') + '</span></td>'
         + noteCell(r) + itemsCell(r) + '</tr>').join('')
       + '</tbody></table></div>';
+  }
+  return html;
+}
+
+// ---------- 新增文件 ----------
+// 摘要是从笔记自己身上取的（frontmatter 的 summary / ## 摘要 段），
+// 取不到才退回正文首段，并且标出来源，不假装是作者写的摘要。
+const WINDOWS = [1, 3, 7, 14, 30];
+const rec = DATA.recent || { windowDays: 30, files: [], others: {} };
+const recMax = rec.windowDays || 30;
+const others = rec.others || {};
+let win = WINDOWS.includes(7) && recMax >= 7 ? 7 : recMax;
+let query = '';
+
+function inWindow(f) { return ms(f.made) >= NOW - (win - 1) * DAY; }
+
+function filesSection() {
+  const maxDay = recMax;
+  const segs = WINDOWS.filter((w) => w <= maxDay).map((w) => {
+    const n = recentFiles.filter((f) => ms(f.made) >= NOW - (w - 1) * DAY).length;
+    return '<button data-win="' + w + '"' + (w === win ? ' class="on"' : '') + '>' + w + ' 天<em>' + n + '</em></button>';
+  }).join('');
+
+  const list = recentFiles.filter(inWindow);
+  const q = query.trim().toLowerCase();
+  const hit = (f) => !q || ((f.title || '') + f.name + f.rel + (f.summary || '') + (f.type || '')).toLowerCase().includes(q);
+  const shown = list.filter(hit);
+
+  // 按项目分组，条目多的排前面
+  const groups = new Map();
+  for (const f of shown) {
+    if (!groups.has(f.project)) groups.set(f.project, []);
+    groups.get(f.project).push(f);
+  }
+  const ordered = [...groups.entries()].sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0], 'zh'));
+
+  const fileRow = (f) => {
+    const dir = f.rel.split('/').slice(1, -1).join(' / ');
+    return '<div class="f"><div class="f-meta">' + f.made.slice(5)
+      + (f.type ? '<br><span class="pill">' + esc(f.type) + '</span>' : '') + '</div>'
+      + '<div><div class="f-title">' + esc(f.title || f.name.replace(/\.[^.]+$/, '')) + '</div>'
+      + (dir ? '<div class="f-path">' + esc(dir) + '</div>' : '')
+      + (f.summary
+        ? '<div class="f-sum">' + esc(f.summary) + '<span class="f-src">' + esc(f.from || '摘要') + '</span></div>'
+        : '<div class="f-none">这个文件没有可取正文的摘要段，只登记文件名。</div>')
+      + '</div></div>';
+  };
+
+  const groupsHtml = ordered.length
+    ? ordered.map(([proj, fs]) => {
+      const dates = fs.map((f) => f.made).sort();
+      const other = others[proj] || 0;
+      return '<details class="proj" open><summary><h3>' + esc(proj) + '</h3><span class="n">' + fs.length + '</span>'
+        + (other ? '<span class="other">另有 ' + other + ' 个非文本文件</span>' : '')
+        + '<span class="range">' + dates[0].slice(5) + ' – ' + dates[dates.length - 1].slice(5) + '</span></summary>'
+        + fs.map(fileRow).join('') + '</details>';
+    }).join('')
+    : '<div class="none">这个范围里没有新增文件。</div>';
+
+  const total = list.length;
+  return '<div class="card" id="s-files"><h2>新增文件<small>近 ' + win + ' 天 · ' + shown.length + ' / ' + total + ' 篇</small></h2>'
+    + '<p class="card-sub">扫 <code style="font-family:var(--mono);font-size:12px">20_客户项目/</code> 下新出现的文本文件，摘要取自笔记自身的 summary 或摘要段。隐藏目录（agent 脚手架）与 SCHEMA §2.1 豁免的 demo / tools 目录不计入。</p>'
+    + '<div class="toolbar"><div class="seg" id="seg">' + segs + '</div>'
+    + '<input class="filt" id="filt" type="search" placeholder="按标题、路径、摘要过滤…" value="' + esc(query) + '">'
+    + '<span class="count" id="cnt">' + ordered.length + ' 个项目</span></div>'
+    + '<div id="flist">' + groupsHtml + '</div></div>';
+}
+
+// ---------- 组装 ----------
+parts.push(timeline());
+parts.push(tables());
+if (recentFiles.length || Object.keys(others).length) parts.push(filesSection());
+body.innerHTML = parts.join('');
+
+// ---------- 导航 ----------
+function buildNav() {
+  const items = [['s-timeline', '时间线'], ['s-dated', '有日期条目'], ['s-undated', '待补起止'], ['s-files', '新增文件']];
+  const live = items.filter(([id]) => document.getElementById(id));
+  document.getElementById('tabs').innerHTML = live.map(([id, label]) => {
+    const card = document.getElementById(id);
+    const n = (card.querySelector('h2 small') || {}).textContent || '';
+    return '<a class="tab" href="#' + id + '">' + label + (n ? '<span>' + esc(n.split('·')[0].trim()) + '</span>' : '') + '</a>';
+  }).join('');
+  // 滚到哪一节就点亮哪个 tab
+  const tabs = [...document.querySelectorAll('.tab')];
+  const io = new IntersectionObserver((es) => {
+    for (const e of es) if (e.isIntersecting) {
+      tabs.forEach((t) => t.classList.toggle('on', t.getAttribute('href') === '#' + e.target.id));
+    }
+  }, { rootMargin: '-70px 0px -70% 0px' });
+  live.forEach(([id]) => io.observe(document.getElementById(id)));
+}
+if (document.getElementById('tabs')) buildNav();
+
+// ---------- 新增文件交互 ----------
+const seg = document.getElementById('seg');
+if (seg) {
+  seg.addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-win]');
+    if (!b) return;
+    win = Number(b.dataset.win);
+    redraw();
+  });
+}
+const filt = document.getElementById('filt');
+if (filt) {
+  filt.addEventListener('input', () => { query = filt.value; redraw(true); });
+}
+// 只重画列表本身：重建整节会丢掉输入框焦点和滚动位置
+function redraw(keepFocus) {
+  const card = document.getElementById('s-files');
+  if (!card) return;
+  const fresh = document.createElement('div');
+  fresh.innerHTML = filesSection();
+  const next = fresh.firstElementChild;
+  ['#seg', '#flist', '#cnt'].forEach((sel) => {
+    const a = card.querySelector(sel), b = next.querySelector(sel);
+    if (a && b) a.replaceWith(b);
+  });
+  card.querySelector('h2 small').textContent = next.querySelector('h2 small').textContent;
+  if (keepFocus && filt) {
+    const v = filt.value;
+    filt.value = v;
+    filt.focus();
   }
 }
 
-document.getElementById('foot').textContent = 'generated ' + DATA.today + ' · gantt-assistant';
+document.getElementById('foot').innerHTML = '<span>generated ' + DATA.today + ' · gantt-assistant</span>'
+  + '<span>提醒命中 ' + (s.reminders - s.unmatched) + '/' + s.reminders + ' · 未归类 ' + s.unmatched + '</span>';
 </script>
 </body></html>
