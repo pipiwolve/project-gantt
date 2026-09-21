@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>项目进展甘特图</title>
+<style>
+:root{
+  --canvas:#faf9f5; --soft:#f5f0e8; --card:#efe9de; --cream:#e8e0d2;
+  --hairline:#e6dfd8; --hairline-2:#ebe6df;
+  --ink:#141413; --body:#3d3d3a; --muted:#6c6a64; --dim:#8e8b82;
+  --accent:#cc785c; --accent-active:#a9583e;
+  --ok:#5db872; --warn:#d4a017; --err:#c64545; --teal:#5db8a6;
+  --serif:"Songti SC","Noto Serif SC","Source Han Serif SC",Georgia,serif;
+  --sans:"PingFang SC","Hiragino Sans GB",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace;
+  --r:12px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--canvas); color:var(--body); font:14px/1.55 var(--sans); -webkit-font-smoothing:antialiased}
+.page{max-width:1180px; margin:0 auto; padding:34px 24px 60px}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important; transition-duration:.01ms!important}}
+
+header.top{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin-bottom:6px}
+h1{margin:0; font-family:var(--serif); font-weight:400; font-size:26px; color:var(--ink); letter-spacing:.2px}
+.asof{font-family:var(--mono); font-size:12px; color:var(--dim)}
+.lede{margin:0 0 22px; color:var(--muted); font-size:13.5px; max-width:70ch}
+
+.stats{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:26px}
+.stat{background:var(--soft); border:1px solid var(--hairline); border-radius:var(--r); padding:10px 14px; min-width:104px}
+.stat b{display:block; font-family:var(--serif); font-weight:400; font-size:22px; color:var(--ink); line-height:1.2}
+.stat span{font-size:11.5px; color:var(--muted)}
+.stat.warn b{color:var(--warn)}
+.stat.miss b{color:var(--err)}
+
+.card{background:var(--canvas); border:1px solid var(--hairline); border-radius:var(--r); padding:18px 20px; margin-bottom:16px}
+.card h2{margin:0 0 14px; font-family:var(--serif); font-weight:400; font-size:16px; color:var(--ink)}
+.card h2 small{font-family:var(--sans); font-size:12px; color:var(--dim); margin-left:8px; font-weight:400}
+
+/* 甘特主体。窄屏靠横向滚动，别把日期轴压变形 */
+.scroll{overflow-x:auto; margin:0 -20px; padding:0 20px}
+.chart{min-width:660px}
+.axis{display:grid; grid-template-columns:186px 1fr; align-items:end; margin-bottom:6px}
+.ticks{position:relative; height:20px; border-bottom:1px solid var(--hairline)}
+.tick{position:absolute; top:0; font-family:var(--mono); font-size:10.5px; color:var(--dim); transform:translateX(-50%); white-space:nowrap}
+.tick:first-child{transform:none}
+.rows{position:relative}
+.grid{position:absolute; inset:0; pointer-events:none}
+.gline{position:absolute; top:0; bottom:0; width:1px; background:var(--hairline-2)}
+.today{position:absolute; top:0; bottom:0; width:2px; background:var(--accent); opacity:.55}
+.todaylab{position:absolute; top:-16px; font-family:var(--mono); font-size:10px; color:var(--accent-active); transform:translateX(-50%); white-space:nowrap}
+.todaylab.lft{transform:translateX(-100%)}
+
+.row{display:grid; grid-template-columns:186px 1fr; align-items:center; min-height:34px; position:relative}
+.row + .row{border-top:1px solid var(--hairline-2)}
+.name{font-size:12.5px; color:var(--ink); padding-right:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.name em{font-style:normal; font-family:var(--mono); font-size:10.5px; color:var(--dim); margin-left:6px}
+.track{position:relative; height:34px}
+
+.bar{position:absolute; top:9px; height:16px; border-radius:8px; background:var(--teal); min-width:3px}
+.bar.over{background:var(--err)}
+.bar.done{background:var(--card); border:1px solid var(--hairline)}
+.bar.mile{top:11px; height:12px; width:12px!important; border-radius:50%; background:var(--canvas); border:2px solid var(--accent); transform:translateX(-6px)}
+.bar .lbl{position:absolute; left:calc(100% + 8px); top:-1px; font-family:var(--mono); font-size:10.5px; color:var(--muted); white-space:nowrap}
+/* 贴着右边界的条，标签放右边会被容器裁掉，翻到左边 */
+.bar .lbl.lft{left:auto; right:calc(100% + 8px)}
+.bar .inl{position:absolute; left:9px; top:0; line-height:16px; font-size:10.5px; color:#fff; white-space:nowrap}
+.bar.done .inl{color:var(--muted)}
+
+.empty{padding:26px 4px; color:var(--dim); font-size:13px}
+.empty b{display:block; font-family:var(--serif); font-size:19px; color:var(--ink); font-weight:400; margin-bottom:8px}
+.empty code{font-family:var(--mono); font-size:12px; background:var(--soft); padding:1px 6px; border-radius:4px; color:var(--body)}
+
+table{width:100%; border-collapse:collapse; font-size:12.5px}
+th,td{border-bottom:1px solid var(--hairline-2); padding:8px 10px; text-align:left; vertical-align:top}
+th{font-weight:500; color:var(--muted); font-size:11.5px}
+td.mono{font-family:var(--mono); font-size:11.5px; color:var(--body); white-space:nowrap}
+td .sub{display:block; color:var(--dim); font-size:11.5px; margin-top:3px}
+.pill{display:inline-block; padding:1px 8px; border-radius:9999px; font-size:10.5px; font-family:var(--mono); background:var(--card); color:var(--muted); border:1px solid var(--hairline)}
+.pill.ok{background:#5db8721f; color:#3f8a52; border-color:#5db87240}
+.pill.over{background:#c645451f; color:var(--err); border-color:#c6454540}
+
+footer{margin-top:28px; color:var(--dim); font-size:11.5px; font-family:var(--mono)}
+@media (max-width:720px){
+  .page{padding:24px 16px 44px}
+  h1{font-size:22px}
+  .axis,.row{grid-template-columns:120px 1fr}
+  .chart{min-width:560px}
+}
+</style>
+</head><body>
+<div class="page">
+  <header class="top">
+    <h1>项目进展甘特图</h1>
+    <span class="asof" id="asof"></span>
+  </header>
+  <p class="lede">数据来自 <code style="font-family:var(--mono);font-size:12px">20_客户项目/</code> 的客户索引、「提醒事项」里未完成的待办，以及口述补录的条目。条要画出来必须有起止两端，只有一端的画成圆点，标记为已完成的条目不出图。</p>
+  <div class="stats" id="stats"></div>
+  <div id="body"></div>
+  <footer id="foot"></footer>
+</div>
+<script>
+const DATA = {"today":"2026-09-21","stat":{"total":17,"scheduled":0,"milestone":11,"unscheduled":6,"reminders":12,"unmatched":9,"finished":9},"rows":[{"dir":"DumateApi接入","title":"DumateApi接入","path":"20_客户项目/DumateApi接入","start":null,"due":null,"note":"","status":"active","items":[],"kind":"unscheduled"},{"dir":"启明","title":"启明","path":"20_客户项目/启明","start":null,"due":null,"note":"Web Coding 子目录：蓝牙映射技术框架梳理 + 与 skill 开放生态/agentAPI 的结合点","status":"active","items":[],"kind":"unscheduled"},{"dir":"小贝Ball世界杯","title":"小贝Ball世界杯","path":"20_客户项目/小贝Ball世界杯","start":null,"due":null,"note":"阶段一完成：接入指南已提供给客户；后续推进待评估","status":"active","items":[],"kind":"unscheduled"},{"dir":"屈臣氏云手机","title":"屈臣氏云手机","path":"20_客户项目/屈臣氏云手机","start":null,"due":"2026-09-23","note":"做一个整理，下周三之前完成","status":"active","items":[{"name":"屈臣氏云手机项目管理","done":false,"due":null,"created":"2026-09-18"}],"kind":"milestone"},{"dir":"灵医-大昕生态","title":"灵医-大昕生态","path":"20_客户项目/灵医-大昕生态","start":null,"due":null,"note":"下一步：协调 PTSA 测试资源，交给大昕健康做测试","status":"active","items":[{"name":"大昕健康-灵医大模型调用","done":false,"due":null,"created":"2026-09-18"}],"kind":"unscheduled"},{"dir":"箭牌AI客服","title":"箭牌AI客服","path":"20_客户项目/箭牌AI客服","start":null,"due":"2026-09-21","note":"跟秒哒结合 Agent API 开发，先出初版整理；2026-09-21 为截止卡点，今天继续代码生成","status":"active","items":[{"name":"箭牌-秒哒结合agentAPI开发初版","done":false,"due":null,"created":"2026-09-18"}],"kind":"milestone"},{"dir":"腾一科技","title":"腾一科技","path":"20_客户项目/腾一科技","start":null,"due":null,"note":"下一步：胜算与伐谋的 APS 排程，先整好胜算的数据基础，再用伐谋发起任务；2026-09-21 导出腾一科技胜算数据，在伐谋试跑并给出反馈","status":"active","items":[],"kind":"unscheduled"},{"dir":"multica配置","title":"multica配置","path":null,"start":"2026-09-18","due":null,"note":"未归类","status":null,"items":[],"kind":"milestone"},{"dir":"睿思智联fable5空返","title":"睿思智联fable5空返","path":null,"start":null,"due":null,"note":"进行中：已反馈给客户，等待客户回应","status":null,"items":[],"kind":"unscheduled"},{"dir":"Vibecoding小键盘，1. 蓝牙映射技术框架梳理 2.结合skill开放生态/agentAPI分析结合点","title":"Vibecoding小键盘，1. 蓝牙映射技术框架梳理 2.结合skill开放生态/agentAPI分析结合点","path":null,"start":null,"due":"2026-09-21","note":"Web Coding 子目录，明天作为卡点","status":null,"items":[],"project":"启明","kind":"milestone"},{"dir":"cdn参数技术细节补全","title":"cdn参数技术细节补全","path":null,"start":"2026-09-20","due":null,"note":"并入云计算框架知识整理","status":null,"items":[],"kind":"milestone"},{"dir":"百度智能云-具身智能合作","title":"百度智能云-具身智能合作","path":null,"start":"2026-09-20","due":null,"note":"整理具身智能合作方向 + 过往 Case 案例文档","status":null,"items":[],"kind":"milestone"},{"dir":"Ai搜索+ 小参数模型","title":"Ai搜索+ 小参数模型","path":null,"start":"2026-09-21","due":null,"note":"未归类","status":null,"items":[],"kind":"milestone"},{"dir":"拍学机，结合网盘打通举一反三","title":"拍学机，结合网盘打通举一反三","path":null,"start":"2026-09-21","due":null,"note":"未归类","status":null,"items":[],"kind":"milestone"},{"dir":"灵医-大昕生态 · 协调 PTSA 测试资源","title":"灵医-大昕生态 · 协调 PTSA 测试资源","path":null,"start":"2026-09-20","due":null,"note":"提供测试资源给大昕健康做对应测试","status":null,"project":"灵医-大昕生态","items":[],"kind":"milestone"},{"dir":"键盘传输协议 × DuMate 生态白皮书 × 启明 vibe Coding 结合","title":"键盘传输协议 × DuMate 生态白皮书 × 启明 vibe Coding 结合","path":null,"start":"2026-09-21","due":null,"note":"昨天已梳理一版键盘传输协议；今天结合 DuMate 生态宣传/宣讲白皮书与启明 vibe Coding 梳理做结合，产出返回启明端，评估后续推进","status":null,"project":"启明","items":[],"kind":"milestone"},{"dir":"腾一科技 · 胜算与伐谋 APS 排程","title":"腾一科技 · 胜算与伐谋 APS 排程","path":null,"start":"2026-09-21","due":null,"note":"先整好胜算的数据基础，再用伐谋发起任务；2026-09-21 导出腾一科技胜算数据，在伐谋试跑并给出反馈","status":null,"project":"腾一科技","items":[],"kind":"milestone"}]};
+
+const DAY = 86400000;
+const ms = (s) => new Date(s + 'T00:00:00Z').getTime();
+const fmt = (t) => new Date(t).toISOString().slice(5, 10).replace('-', '/');
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+const rows = DATA.rows;
+const dated = rows.filter((r) => r.start || r.due);
+const undated = rows.filter((r) => !r.start && !r.due);
+
+document.getElementById('asof').textContent = '截至 ' + DATA.today;
+
+// 统计条
+const s = DATA.stat;
+document.getElementById('stats').innerHTML = [
+  ['', s.total, '总行数'],
+  ['', s.scheduled, '已排期（有起止）'],
+  [s.milestone ? 'warn' : '', s.milestone, '只有单端日期'],
+  [s.unscheduled ? 'miss' : '', s.unscheduled, '待补起止'],
+  ['', s.finished || 0, '已完成（不显示）'],
+].map(([c, v, t]) => '<div class="stat ' + c + '"><b>' + v + '</b><span>' + t + '</span></div>').join('');
+
+const body = document.getElementById('body');
+
+if (!dated.length) {
+  body.innerHTML = '<div class="card"><h2>还没有可以画的时间线</h2><div class="empty">'
+    + '<b>缺的是日期，不是图</b>'
+    + '采集和渲染都通了：读到了 <code>' + s.total + '</code> 行，其中客户项目来自 <code>20_客户项目/</code> 的索引，'
+    + '关联到项目的提醒 <code>' + (s.reminders - s.unmatched) + '/' + s.reminders + '</code> 条。'
+    + '但这些项目既没有开始日期也没有截止日期，提醒事项那边也只有一条填了截止日，所以画不出条。'
+    + '<br><br>补一句话就行，比如「箭牌 9/20 到 9/30」，我把日期写进 <code>schedule.json</code> 再重跑。'
+    + '</div></div>';
+} else {
+  // 日期域，两端各留一天，免得条贴边
+  let lo = Infinity, hi = -Infinity;
+  for (const r of dated) for (const d of [r.start, r.due]) if (d) { lo = Math.min(lo, ms(d)); hi = Math.max(hi, ms(d)); }
+  lo -= DAY; hi += DAY;
+  const span = hi - lo;
+  const pct = (t) => ((t - lo) / span) * 100;
+  // 靠右的标签翻到左边，否则溢出容器被裁
+  const side = (p) => (p > 76 ? ' lft' : '');
+  const now = ms(DATA.today);
+
+  // 刻度：跨度大就按月，小就按天
+  const days = Math.round(span / DAY);
+  const step = days > 120 ? 30 : days > 45 ? 14 : days > 14 ? 7 : 1;
+  let ticks = '';
+  const lines = [];
+  for (let t = lo; t <= hi; t += step * DAY) {
+    const p = pct(t);
+    ticks += '<div class="tick" style="left:' + p + '%">' + fmt(t) + '</div>';
+    lines.push('<div class="gline" style="left:' + p + '%"></div>');
+  }
+  const todayLine = (now >= lo && now <= hi)
+    ? '<div class="today" style="left:' + pct(now) + '%"></div><div class="todaylab' + side(pct(now)) + '" style="left:' + pct(now) + '%">今天</div>'
+    : '';
+
+  const rowHtml = (r) => {
+    const st = r.status === 'done' ? 'done' : null;
+    const over = r.due && r.due < DATA.today && r.status !== 'done';
+    let bar;
+    if (r.kind === 'bar') {
+      const a = pct(ms(r.start)), b = pct(ms(r.due));
+      const w = Math.max(b - a, 0.6);
+      const label = r.items.length ? r.items.length + ' 项待办' : '';
+      bar = '<div class="bar ' + (over ? 'over' : '') + (st ? ' ' + st : '') + '" style="left:' + a + '%;width:' + w + '%">'
+        + (label && w > 16 ? '<span class="inl">' + label + '</span>' : '')
+        + '<span class="lbl' + side(b) + '">' + fmt(ms(r.start)) + '–' + fmt(ms(r.due)) + (over ? ' · 逾期' : '') + '</span></div>';
+    } else {
+      const at = pct(ms(r.due || r.start));
+      bar = '<div class="bar mile" style="left:' + at + '%"><span class="lbl' + side(at) + '">' + fmt(ms(r.due || r.start))
+        + (r.due ? ' 截止' : ' 创建') + '</span></div>';
+    }
+    const sub = r.items.length ? '<em>' + r.items.length + '</em>' : '';
+    return '<div class="row"><div class="name" title="' + esc(r.title) + '">' + esc(r.title) + sub + '</div>'
+      + '<div class="track">' + bar + '</div></div>';
+  };
+
+  body.innerHTML = '<div class="card"><h2>时间线<small>' + fmt(lo + DAY) + ' – ' + fmt(hi - DAY) + '</small></h2>'
+    + '<div class="scroll"><div class="chart">'
+    + '<div class="axis"><div></div><div class="ticks">' + ticks + '</div></div>'
+    + '<div class="rows">' + todayLine + lines.join('') + dated.map(rowHtml).join('') + '</div>'
+    + '</div></div></div>';
+
+  const cells = (r) => '<td>' + esc(r.title) + (r.project ? '<span class="sub">' + esc(r.project) + '</span>' : '') + '</td>';
+  const itemsCell = (r) => '<td>' + (r.items.length
+    ? r.items.map((i) => esc(i.name)).join('<span class="sub"></span>')
+    : '<span style="color:var(--dim)">—</span>') + '</td>';
+  const noteCell = (r) => '<td>' + (r.note && r.note !== '未归类'
+    ? esc(r.note) : '<span style="color:var(--dim)">' + esc(r.note || '—') + '</span>') + '</td>';
+
+  // 有日期的排完图，再列一张明细，把进展备注带出来
+  if (dated.length) {
+    body.innerHTML += '<div class="card"><h2>有日期的条目<small>' + dated.length + ' 项</small></h2>'
+      + '<table><thead><tr><th>条目</th><th>开始</th><th>截止</th><th>进展 / 说明</th><th>关联待办</th></tr></thead><tbody>'
+      + dated.map((r) => '<tr>' + cells(r)
+        + '<td class="mono">' + (r.start || '—') + '</td><td class="mono">' + (r.due || '—') + '</td>'
+        + noteCell(r) + itemsCell(r) + '</tr>').join('')
+      + '</tbody></table></div>';
+  }
+
+  if (undated.length) {
+    body.innerHTML += '<div class="card"><h2>待补起止<small>' + undated.length + ' 项</small></h2>'
+      + '<table><thead><tr><th>项目</th><th>状态</th><th>进展 / 说明</th><th>关联待办</th></tr></thead><tbody>'
+      + undated.map((r) => '<tr>' + cells(r) + '<td><span class="pill">' + esc(r.status || '—') + '</span></td>'
+        + noteCell(r) + itemsCell(r) + '</tr>').join('')
+      + '</tbody></table></div>';
+  }
+}
+
+document.getElementById('foot').textContent = 'generated ' + DATA.today + ' · gantt-assistant';
+</script>
+</body></html>
